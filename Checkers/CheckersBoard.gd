@@ -35,6 +35,11 @@ func _ready():
 	
 	update_board()
 	
+	# How to edit checker counter
+	var checker = white_team_ref.get_node("WChecker")
+	checker.get_node("Counter").get_node("Label").text = "+2"
+	
+	
 #	print(current_board)
 	
 #	move_peice(Vector2(0,2), Vector2(2,4))
