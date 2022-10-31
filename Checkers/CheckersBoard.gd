@@ -135,69 +135,53 @@ func new_game():
 	turn_index = 0
 
 
-#true is black, false is white
 func position_move_data(check_position: Vector2):
 	
-	var team = is_tile_filled(check_position)[1]
-	var is_king = is_tile_filled(check_position)[2]
+	var team =   current_board[check_position][2]
+	var is_king = current_board[check_position][3]
 	
-	#we will spawn a marker at each viable location which when cliked will
+	#we will spawn a marker at each viable location which when clicked will
 	#move the piece to that location and delete any jumped tile
 	var viable_locations := {}
 	#contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
-	
 	var directions_to_check:= []
 	
-	if(is_king == false):
-		#black team
-		if(team == "black"):
-			directions_to_check = [Vector2(1,-1), Vector2(-1,-1)]
-		#white
-		if(team == "white"):
-			directions_to_check = [Vector2(1,1), Vector2(-1,1)]
-	
-	if(is_king == true):
-		directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
-	
-	for direction in directions_to_check:
-#		print("checking direction: ", direction)
+	directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
+	var direction
+	while directions_to_check.size()>0:
+		direction = directions_to_check.pop_front()
 		var adjacent_data = check_adjacent_for_move(check_position, direction)
-		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
+		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile] ]
 		
+		#move but no jump
 		if((adjacent_data[0] == true) and (adjacent_data[1] == false)):
 			viable_locations[adjacent_data[2][1]] = [false, check_position]
-#			print("can move but not jump, adjacent data is: ", adjacent_data)
-		
+			if is_king:
+				#continues along line if king
+				var further = Vector2(direction.x + (1 if direction.x>0 else -1),
+								direction.y + (1 if direction.y>0 else -1))
+				directions_to_check.append(further)
+		#jump but no move
 		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
 			viable_locations[adjacent_data[2][2]] = [true, check_position, adjacent_data[2][1]]
-#			print("can jump but not move, adjacent data is: ", adjacent_data)
 	
-#	print("viable_locations: ", viable_locations)
 	public_viable_locations = viable_locations
 
 
 func check_for_jump(tile):
 	
-	var team = is_tile_filled(tile)[1]
-	var is_king = is_tile_filled(tile)[2]
+	var team =   current_board[tile][2]
+	var is_king = current_board[tile][3]
 	
-	var directions_to_check:= []
+	var directions_to_check:= [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
 	
-	if(is_king == false):
-		#black team
-		if(team == "black"):
-			directions_to_check = [Vector2(1,-1), Vector2(-1,-1)]
-		#white
-		if(team == "white"):
-			directions_to_check = [Vector2(1,1), Vector2(-1,1)]
-	
-	if(is_king == true):
-		directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
-	
-	for direction in directions_to_check:
-#		print("checking direction: ", direction)
+	var direction
+	while directions_to_check.size()>0:
+		direction = directions_to_check.pop_front()
 		var adjacent_data = check_adjacent_for_move(tile, direction)
 		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
+		#only jumping is allowed now
+		#TODO: CONSIDER ADDING MULTIPLE TILE JUMP FOR KING TILE HERE
 		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
 			return(true)
 	return(false)
@@ -205,25 +189,17 @@ func check_for_jump(tile):
 
 func search_for_jumps_only(tile):
 	
-	var team = is_tile_filled(tile)[1]
-	var is_king = is_tile_filled(tile)[2]
+	#TODO: CONSIDER ADDING MULTIPLE TILE JUMP FOR KING TILE HERE
+	var team =   current_board[tile][2]
+	var is_king = current_board[tile][3]
 	
 	var viable_locations := {}
-	var directions_to_check:= []
+	var directions_to_check:= [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
 	
-	if(is_king == false):
-		#black team
-		if(team == "black"):
-			directions_to_check = [Vector2(1,-1), Vector2(-1,-1)]
-		#white
-		if(team == "white"):
-			directions_to_check = [Vector2(1,1), Vector2(-1,1)]
 	
-	if(is_king == true):
-		directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
-	
-	for direction in directions_to_check:
-#		print("checking direction: ", direction)
+	var direction
+	while directions_to_check.size()>0:
+		direction = directions_to_check.pop_front()
 		var adjacent_data = check_adjacent_for_move(tile, direction)
 		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
 		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
@@ -248,7 +224,6 @@ func show_possible_moves():
 func clear_move_markers():
 	for child in $ViableLocations.get_children():
 		child.queue_free()
-#	print("cleared move markers")
 
 
 func kill_checker(tile):
@@ -256,13 +231,15 @@ func kill_checker(tile):
 	current_board[tile] = [false, null, "", false]
 	b_pieces_remaining = black_team_ref.get_child_count()
 	w_pieces_remaining = white_team_ref.get_child_count()
+	#TODO: UPDATE INCOME INFO HERE
 
 
 #0 is if it is filled, 2 is by whom
 func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
 	#returns in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
 	var adjacent_tile: Vector2 = (tile + vector_direction)
-	var jump_tile: Vector2 = (tile + (vector_direction * 2))
+	var jump_boost = Vector2(1 if vector_direction.x>0 else -1,1 if vector_direction.y>0 else -1)
+	var jump_tile: Vector2 = (tile + (vector_direction)+jump_boost)
 	var my_color: String = current_board[tile][2]
 	
 	if(
@@ -290,13 +267,6 @@ func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
 			#the tile is filled with an enemy and there isn't a unit behind it; can jump
 		else:
 			return([false, false])#the tile is filled with a guarded enemy
-
-
-func is_tile_filled(tile: Vector2):
-	if(current_board[tile][0] == false):
-		return([false, current_board[tile][2], current_board[tile][3]])
-	else:
-		return([true, current_board[tile][2], current_board[tile][3]])
 
 
 func king_me(tile):
