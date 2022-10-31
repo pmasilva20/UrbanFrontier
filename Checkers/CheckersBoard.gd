@@ -99,8 +99,7 @@ func _unhandled_input(event):
 		var map_cell_pos = $Board.world_to_map(world_click_pos)
 		
 		if((map_cell_pos.x >= 8) or (map_cell_pos.y >= 8) or (map_cell_pos.x < 0) or (map_cell_pos.y < 0)):#OOB check
-			if(selecting_destination):
-				selecting_destination = false
+			selecting_destination = false
 			return
 		if((not current_board[map_cell_pos][0]) and (not selecting_destination)):
 			return
