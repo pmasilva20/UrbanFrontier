@@ -9,7 +9,6 @@ onready var w_pieces_remaining: int = $W.get_child_count()
 onready var b_pieces_remaining: int = $B.get_child_count()
 
 var multijump_mode:= false
-var multijump_cell: Vector2
 
 var selecting_destination := false
 var selected_tile: Vector2
@@ -57,7 +56,7 @@ func update_board_group(group,faction):
 	
 		
 func move_piece(initial_coord: Vector2, destination: Vector2):
-	if(current_board[destination][0] == true): #tile is filled
+	if(current_board[destination][0]): #tile is filled
 		return
 	else:
 		var current_pos = ($Board.map_to_world(initial_coord) + Vector2(32,32))
@@ -71,11 +70,11 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 		clear_tile_data(initial_coord)
 		
 		var team = current_board[destination][2]
-		if((team == "white") && (destination.y == 7)):
+		if((team == "white") and (destination.y == 7)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
-		if((team == "black") && (destination.y == 0)):
+		if((team == "black") and (destination.y == 0)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
@@ -85,6 +84,7 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 
 
 func end_turn():
+	clear_move_markers()
 	turn_index += 1
 	#TODO: INCOME MECHANICS UPDATE HERE
 
@@ -99,18 +99,18 @@ func _unhandled_input(event):
 		var map_cell_pos = $Board.world_to_map(world_click_pos)
 		
 		if((map_cell_pos.x >= 8) or (map_cell_pos.y >= 8) or (map_cell_pos.x < 0) or (map_cell_pos.y < 0)):#OOB check
-			if(selecting_destination == true):
+			if(selecting_destination):
 				selecting_destination = false
 			return
-		if((current_board[map_cell_pos][0] == false) && (selecting_destination == false)):
+		if((not current_board[map_cell_pos][0]) and (not selecting_destination)):
 			return
 		
-		if selecting_destination == false:
+		if not selecting_destination and not multijump_mode:
 			#this seems to go into move preview mode
 			selecting_destination = true
 			position_move_data(map_cell_pos)
 			show_possible_moves()
-		else:
+		elif not multijump_mode:
 			selecting_destination = false
 			clear_move_markers()
 
@@ -127,9 +127,9 @@ func new_game():
 	var b_instance = black_team.instance()
 	black_team_ref = b_instance
 	add_child(b_instance)
-
-	for child in $ViableLocations.get_children():
-		child.queue_free()
+	multijump_mode = false
+	selecting_destination = false
+	clear_move_markers()
 	
 	update_board()
 	turn_index = 0
@@ -154,7 +154,7 @@ func position_move_data(check_position: Vector2):
 		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile] ]
 		
 		#move but no jump
-		if((adjacent_data[0] == true) and (adjacent_data[1] == false)):
+		if((adjacent_data[0]) and (not adjacent_data[1])):
 			viable_locations[adjacent_data[2][1]] = [false, check_position]
 			if is_king:
 				#continues along line if king
@@ -162,29 +162,12 @@ func position_move_data(check_position: Vector2):
 								direction.y + (1 if direction.y>0 else -1))
 				directions_to_check.append(further)
 		#jump but no move
-		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
+		if((adjacent_data[0]) and (adjacent_data[1])):
 			viable_locations[adjacent_data[2][2]] = [true, check_position, adjacent_data[2][1]]
 	
 	public_viable_locations = viable_locations
 
 
-func check_for_jump(tile):
-	
-	var team =   current_board[tile][2]
-	var is_king = current_board[tile][3]
-	
-	var directions_to_check:= [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
-	
-	var direction
-	while directions_to_check.size()>0:
-		direction = directions_to_check.pop_front()
-		var adjacent_data = check_adjacent_for_move(tile, direction)
-		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
-		#only jumping is allowed now
-		#TODO: CONSIDER ADDING MULTIPLE TILE JUMP FOR KING TILE HERE
-		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
-			return(true)
-	return(false)
 
 
 func search_for_jumps_only(tile):
@@ -202,7 +185,7 @@ func search_for_jumps_only(tile):
 		direction = directions_to_check.pop_front()
 		var adjacent_data = check_adjacent_for_move(tile, direction)
 		#in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
-		if((adjacent_data[0] == true) and (adjacent_data[1] == true)):
+		if((adjacent_data[0]) and (adjacent_data[1])):
 			viable_locations[adjacent_data[2][2]] = [true, tile, adjacent_data[2][1]]
 	
 	
@@ -222,6 +205,7 @@ func show_possible_moves():
 
 
 func clear_move_markers():
+	
 	for child in $ViableLocations.get_children():
 		child.queue_free()
 
@@ -247,14 +231,11 @@ func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
 	):
 		return([false, false]) #the tile is outside of the board; cannot move this way
 	
-	
-	if(current_board[adjacent_tile][0] == false):
+	if(not current_board[adjacent_tile][0]):
 		return([true, false, [tile, adjacent_tile]])#the tile is within the board and empty
-	
 	
 	if(current_board[adjacent_tile][2] == my_color):
 		return([false, false])#the tile is filled with a friendly; cannot move this way
-	
 	
 	if(current_board[adjacent_tile][2] != my_color):
 		if(
@@ -262,7 +243,7 @@ func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
 		):
 			return([false, false]) 
 			#the tile is on the edge of the board
-		if(current_board[jump_tile][0] == false):
+		if(not current_board[jump_tile][0]):
 			return([true, true, [tile, adjacent_tile, jump_tile]])
 			#the tile is filled with an enemy and there isn't a unit behind it; can jump
 		else:
@@ -287,78 +268,59 @@ func king_me(tile):
 		white_team_ref.add_child(king_instance)
 		current_board[tile][1] = king_instance
 
-
+func invalidClick(cell):
+	return (
+		(not selecting_destination and not multijump_mode) #we have not selected a piece yet
+		and
+		#tile isnt empty or we didnt select wrong team 
+		(not current_board[cell][0] or current_board[cell][2] != teams[turn_index%2]) 
+		
+		#(not current_board[cell][0] and not selecting_destination and not multijump_mode) #empty cell, non-move mode
+		#or (not selecting_destination and not multijump_mode) and (current_board[cell][2] != teams[turn_index%2]) #filled cell,wrong team
+	)
 func _on_Cursor_accept_pressed(cell):
-	print("location details: ", current_board[cell])
-	
-	#check if empty
-	if((current_board[cell][0] == false) && (selecting_destination == false)):
+	#TODO: MAKE ANOTHER FUNCTION FOR BUY MODE AND TOGGLE BETWEEN THESE 2
+	if invalidClick(cell):
 		return
 	
-	#check team
-	if((selecting_destination == false) && (current_board[cell][2] != teams[turn_index%2])):
-		print("not ", current_board[cell][2], "'s move! waiting for ", teams[turn_index%2], " to move")
-		return
-	
-	#check if selecting is false
-	if((selecting_destination == false) && (multijump_mode == false)):
+	#first click for movement prediction
+	if(not selecting_destination and not multijump_mode):
 		selecting_destination = true
 		position_move_data(cell)
 		show_possible_moves()
 		return
-	
-	elif((selecting_destination == false) && (multijump_mode == true)):
-		if (multijump_mode == true):
-			search_for_jumps_only(cell)
-		show_possible_moves()
-		selecting_destination = true
-		return
-	
-	elif(selecting_destination == true):
+	#time to actually move
+	elif(selecting_destination or multijump_mode):
 		if(public_viable_locations.has(cell)):
 			var coord_data = public_viable_locations[cell]
-#contents of public_viable_locations will be formated 
-#{destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
-			
-#contents of coord_data will be formated 
-#[is_jumping, starting_point, jumped_tile(if applicable)]
-			if(coord_data[0] == false):#not jumping
+			if(not coord_data[0]):#not jumping
 				move_piece(coord_data[1], cell)
 				end_turn()
 			
-			if(coord_data[0] == true):#jumping
+			if(coord_data[0]):#jumping
 				move_piece(coord_data[1], cell)
 				kill_checker(coord_data[2])
 				
-				var can_multijump = check_for_jump(cell)
-				
-				if(can_multijump == false):#can't jump again
+				search_for_jumps_only(cell)
+				var can_multijump = public_viable_locations.size()!=0
+				if(not can_multijump):
 					multijump_mode = false
 					$EndTurn.disabled = true
 					end_turn()
-					public_viable_locations = {}
-				
-				if(can_multijump == true):#can multijump
+				else:
+					clear_move_markers()
 					multijump_mode = true
 					$EndTurn.disabled = false
-					multijump_cell = cell
-					search_for_jumps_only(cell)
-					selecting_destination = false
-			
-			selecting_destination = false
+					#todo: defer rendering somehow
+					show_possible_moves()
+					print(public_viable_locations)
+		elif not multijump_mode:
 			clear_move_markers()
-			return
-		
-		selecting_destination = false
-		clear_move_markers()
-		return
+	selecting_destination = false
 	
-	print("cursor unhandled")
-
-
 func _on_EndTurn_pressed():
 	end_turn()
 	selecting_destination = false
 	$EndTurn.disabled = true
 	multijump_mode = false
-	clear_move_markers()
+	
