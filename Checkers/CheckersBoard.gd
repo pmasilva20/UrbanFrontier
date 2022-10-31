@@ -5,8 +5,8 @@ extends Node2D
 #even is black, 4 is king
 var current_board: Dictionary = {}
 #in format tile: [is occupied, refrence, color, is king]
-onready var w_peices_remaining: int = $W.get_child_count()
-onready var b_peices_remaining: int = $B.get_child_count()
+onready var w_pieces_remaining: int = $W.get_child_count()
+onready var b_pieces_remaining: int = $B.get_child_count()
 
 var multijump_mode:= false
 var multijump_cell: Vector2
@@ -32,18 +32,11 @@ onready var white_king = preload("res://Checkers/WKing.tscn")
 
 func _ready():
 	empty_board()
-	
 	update_board()
 	
 	# How to edit checker counter
 	var checker = white_team_ref.get_node("WChecker")
 	checker.get_node("Counter").get_node("Label").text = "+2"
-	
-	
-#	print(current_board)
-	
-#	move_peice(Vector2(0,2), Vector2(2,4))
-
 
 func empty_board():
 	for y in 8:
@@ -52,58 +45,32 @@ func empty_board():
 #in format is occupied, refrence, color, is king
 
 
-func update_board():
-	b_peices_remaining = black_team_ref.get_child_count()
-	w_peices_remaining = white_team_ref.get_child_count()
+func update_board():	
+	update_board_group(black_team_ref.get_children(),"black")
+	update_board_group(white_team_ref.get_children(),"white")
+
+func update_board_group(group,faction):
+	for x in group:
+		var position = x.get_position()
+		var coord: Vector2 = $Board.world_to_map(position)	
+		current_board[coord] = [true, x, faction, x.is_in_group("King")]
 	
-	var b_children = black_team_ref.get_children()
-	for b_child in b_children:
-		var position = b_child.get_position()
-		var coord: Vector2 = $Board.world_to_map(position)
-#		print("black tile at: ", coord)
-	
-		if(b_child.is_in_group("Standard")):
-			current_board[coord] = [true, b_child, "black", false]#3 is for if it is a king
-		elif(b_child.is_in_group("King")):
-			current_board[coord] = [true, b_child, "black", true]
-		else:
-			print("there is a weird checker at: ", coord)
-	
-	var w_children = white_team_ref.get_children()
-	for w_child in w_children:
-		var position = w_child.get_position()
-		var coord: Vector2 = $Board.world_to_map(position)
-#		print("white tile at: ", coord)
 		
-		if(w_child.is_in_group("Standard")):
-			current_board[coord] = [true, w_child, "white", false]
-		elif(w_child.is_in_group("King")):
-			current_board[coord] = [true, w_child, "white", true]
-		else:
-			print("there is a weird checker at: ", coord)
-
-
-func move_peice(initial_coord: Vector2, destination: Vector2):
-#	print(current_board)
-	if(current_board[destination][0] == true):
-		print("tile is filled")
+func move_piece(initial_coord: Vector2, destination: Vector2):
+	if(current_board[destination][0] == true): #tile is filled
 		return
 	else:
-#		move the peice
 		var current_pos = ($Board.map_to_world(initial_coord) + Vector2(32,32))
 		var destination_global = ($Board.map_to_world(destination) + Vector2(32,32))
 		$Tween.interpolate_property(current_board[initial_coord][1], "position",
 		current_pos, destination_global, 1.2,
 		Tween.TRANS_QUAD, Tween.EASE_IN_OUT)
 		$Tween.start()
-#		transfer the values
-#		current_board in format tile: [is occupied, refrence, color, is king]
+		
 		current_board[destination] = current_board[initial_coord]
-#		print("current_board[destination] = ", current_board[destination])
-#		print("current_board[initial_coord] = ", current_board[initial_coord])
-		var team = current_board[initial_coord][2]
 		clear_tile_data(initial_coord)
 		
+		var team = current_board[destination][2]
 		if((team == "white") && (destination.y == 7)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
@@ -113,20 +80,13 @@ func move_peice(initial_coord: Vector2, destination: Vector2):
 			yield($Tween, "tween_completed")
 			king_me(destination)
 		
-		
-#		print("current_board[initial_coord] = ", current_board[initial_coord])
-		
-		
-		
-	
 	public_viable_locations = {}
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
 
 
 func end_turn():
 	turn_index += 1
-	if(turn_index > (teams.size() - 1)):
-		turn_index = 0
+	#TODO: INCOME MECHANICS UPDATE HERE
 
 
 func clear_tile_data(tile):
@@ -138,38 +98,25 @@ func _unhandled_input(event):
 		var world_click_pos = event.position
 		var map_cell_pos = $Board.world_to_map(world_click_pos)
 		
-		print("unhandled event @", map_cell_pos)
-		
-		
-		if((map_cell_pos.x >= 8) or (map_cell_pos.y >= 8) or (map_cell_pos.x < 0) or (map_cell_pos.y < 0)):
+		if((map_cell_pos.x >= 8) or (map_cell_pos.y >= 8) or (map_cell_pos.x < 0) or (map_cell_pos.y < 0)):#OOB check
 			if(selecting_destination == true):
 				selecting_destination = false
 			return
-		
-		print("location details: ", current_board[map_cell_pos])
-		
 		if((current_board[map_cell_pos][0] == false) && (selecting_destination == false)):
 			return
 		
 		if selecting_destination == false:
+			#this seems to go into move preview mode
 			selecting_destination = true
-#			print("selecting destination")
 			position_move_data(map_cell_pos)
-#			print("public_viable_locations: ", public_viable_locations)
 			show_possible_moves()
 		else:
 			selecting_destination = false
 			clear_move_markers()
-#			if selected_tile == map_cell_pos:
-#				selecting_destination = false
-#			else:
-#				move_peice(selected_tile, map_cell_pos)
-#				selecting_destination = false
 
 
 func new_game():
 	empty_board()
-	
 	white_team_ref.queue_free()
 	black_team_ref.queue_free()
 	
@@ -180,16 +127,12 @@ func new_game():
 	var b_instance = black_team.instance()
 	black_team_ref = b_instance
 	add_child(b_instance)
-	
+
 	for child in $ViableLocations.get_children():
 		child.queue_free()
 	
 	update_board()
 	turn_index = 0
-
-
-func _on_NewGame_pressed():
-	new_game()
 
 
 #true is black, false is white
@@ -199,7 +142,7 @@ func position_move_data(check_position: Vector2):
 	var is_king = is_tile_filled(check_position)[2]
 	
 	#we will spawn a marker at each viable location which when cliked will
-	#move the peice to that location and delete any jumped tile
+	#move the piece to that location and delete any jumped tile
 	var viable_locations := {}
 	#contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
 	
@@ -311,8 +254,8 @@ func clear_move_markers():
 func kill_checker(tile):
 	current_board[tile][1].queue_free()
 	current_board[tile] = [false, null, "", false]
-	b_peices_remaining = black_team_ref.get_child_count()
-	w_peices_remaining = white_team_ref.get_child_count()
+	b_pieces_remaining = black_team_ref.get_child_count()
+	w_pieces_remaining = white_team_ref.get_child_count()
 
 
 #0 is if it is filled, 2 is by whom
@@ -383,8 +326,8 @@ func _on_Cursor_accept_pressed(cell):
 		return
 	
 	#check team
-	if((selecting_destination == false) && (current_board[cell][2] != teams[turn_index])):
-		print("not ", current_board[cell][2], "'s move! waiting for ", teams[turn_index], " to move")
+	if((selecting_destination == false) && (current_board[cell][2] != teams[turn_index%2])):
+		print("not ", current_board[cell][2], "'s move! waiting for ", teams[turn_index%2], " to move")
 		return
 	
 	#check if selecting is false
@@ -410,11 +353,11 @@ func _on_Cursor_accept_pressed(cell):
 #contents of coord_data will be formated 
 #[is_jumping, starting_point, jumped_tile(if applicable)]
 			if(coord_data[0] == false):#not jumping
-				move_peice(coord_data[1], cell)
+				move_piece(coord_data[1], cell)
 				end_turn()
 			
 			if(coord_data[0] == true):#jumping
-				move_peice(coord_data[1], cell)
+				move_piece(coord_data[1], cell)
 				kill_checker(coord_data[2])
 				
 				var can_multijump = check_for_jump(cell)
