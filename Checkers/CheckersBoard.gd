@@ -35,7 +35,7 @@ func _ready():
 	
 	# How to edit checker counter
 	var checker = white_team_ref.get_node("WChecker")
-	checker.get_node("Counter").get_node("Label").text = "+2"
+	checker.get_node("MoveView").get_node("Counter").get_node("Label").text = "+2"
 
 func empty_board():
 	for y in 8:
