@@ -54,7 +54,7 @@ func update_board_group(group,faction):
 		var coord: Vector2 = $Board.world_to_map(position)	
 		current_board[coord] = [true, x, faction, x.is_in_group("King")]
 	
-		
+#returns true if makes king	
 func move_piece(initial_coord: Vector2, destination: Vector2):
 	if(current_board[destination][0]): #tile is filled
 		return
@@ -74,12 +74,15 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
+			return true
 		if((team == "black") and (destination.y == 0)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
+			return true
 		
 	public_viable_locations = {}
+	return false
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
 
 
@@ -297,11 +300,11 @@ func _on_Cursor_accept_pressed(cell):
 				end_turn()
 			
 			if(coord_data[0]):#jumping
-				move_piece(coord_data[1], cell)
+				var kingmaker = move_piece(coord_data[1], cell)
 				kill_checker(coord_data[2])
 				
 				search_for_jumps_only(cell)
-				var can_multijump = public_viable_locations.size()!=0
+				var can_multijump = public_viable_locations.size()!=0 and not kingmaker
 				if(not can_multijump):
 					multijump_mode = false
 					$EndTurn.disabled = true
