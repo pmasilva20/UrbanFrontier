@@ -19,7 +19,7 @@ var _half_cell_size = cell_size / 2
 # We'll place units and have them move through cells using this function.
 func calculate_map_position(grid_position: Vector2) -> Vector2:
 	var pos = grid_position * cell_size + _half_cell_size
-	return Vector2(pos.x, pos.y + 64)
+	return Vector2(pos.x + 144, pos.y + 64)
 
 
 # Returns the coordinates of the cell on the grid given a position on the map.
@@ -28,7 +28,7 @@ func calculate_map_position(grid_position: Vector2) -> Vector2:
 # the grid coordinates they're placed on, and call `calculate_map_position()` to snap them to the
 # cell's center.
 func calculate_grid_coordinates(map_position: Vector2) -> Vector2:
-	return (Vector2(map_position.x, map_position.y - 64) / cell_size).floor()
+	return (Vector2(map_position.x - 144, map_position.y - 64) / cell_size).floor()
 
 
 # Returns true if the `cell_coordinates` are within the grid.

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://Checkers/assets/black tile.jpg" type="Texture" id=1]
 [ext_resource path="res://Checkers/assets/white tile.jpg" type="Texture" id=2]
@@ -7,10 +7,15 @@
 [ext_resource path="res://Checkers/BlackTeam.tscn" type="PackedScene" id=5]
 [ext_resource path="res://Checkers/Cursor.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Checkers/assets/background.jpg" type="Texture" id=7]
-[ext_resource path="res://Checkers/assets/New Game.png" type="Texture" id=8]
-[ext_resource path="res://Checkers/assets/New Game Pressed.png" type="Texture" id=9]
-[ext_resource path="res://Checkers/assets/End Turn.png" type="Texture" id=10]
-[ext_resource path="res://Checkers/assets/End Turn Disabled.png" type="Texture" id=11]
+[ext_resource path="res://Checkers/assets/moveButton.jpg" type="Texture" id=8]
+[ext_resource path="res://Checkers/assets/endturnButton.jpg" type="Texture" id=9]
+[ext_resource path="res://Checkers/assets/investButton.jpg" type="Texture" id=10]
+[ext_resource path="res://Checkers/assets/newgameButton.jpg" type="Texture" id=11]
+[ext_resource path="res://Checkers/assets/black checker.png" type="Texture" id=12]
+[ext_resource path="res://fonts/TitilliumWebRegular.tres" type="DynamicFont" id=13]
+[ext_resource path="res://fonts/EventValueFont.tres" type="DynamicFont" id=14]
+[ext_resource path="res://fonts/TurnFont.tres" type="DynamicFont" id=15]
+[ext_resource path="res://fonts/EventLabelFont.tres" type="DynamicFont" id=16]
 
 [sub_resource type="TileSet" id=3]
 0/name = "black tile.jpg 0"
@@ -49,7 +54,7 @@ __meta__ = {
 }
 
 [node name="Board" type="TileMap" parent="." groups=["BoardTilemap"]]
-position = Vector2( 0, 64 )
+position = Vector2( 144, 64 )
 tile_set = SubResource( 3 )
 centered_textures = true
 format = 1
@@ -59,37 +64,60 @@ __meta__ = {
 }
 
 [node name="Cursor" parent="." instance=ExtResource( 6 )]
+position = Vector2( 144, 64 )
 
 [node name="W" parent="." instance=ExtResource( 4 )]
 
 [node name="B" parent="." instance=ExtResource( 5 )]
 
 [node name="ViableLocations" type="Node2D" parent="."]
-position = Vector2( 0, 64 )
+position = Vector2( 144, 64 )
 
 [node name="Tween" type="Tween" parent="."]
 
 [node name="NewGame" type="TextureButton" parent="."]
-margin_left = 528.0
-margin_top = 16.0
-margin_right = 632.0
-margin_bottom = 56.0
-texture_normal = ExtResource( 8 )
-texture_pressed = ExtResource( 9 )
+margin_left = 9.0
+margin_top = 591.0
+margin_right = 119.0
+margin_bottom = 625.0
+texture_normal = ExtResource( 11 )
 expand = true
 stretch_mode = 4
 
 [node name="EndTurn" type="TextureButton" parent="."]
-margin_left = 528.0
-margin_top = 64.0
-margin_right = 632.0
-margin_bottom = 104.0
+margin_left = 9.0
+margin_top = 207.0
+margin_right = 119.0
+margin_bottom = 241.0
 disabled = true
-texture_normal = ExtResource( 10 )
-texture_pressed = ExtResource( 11 )
-texture_disabled = ExtResource( 11 )
+texture_normal = ExtResource( 9 )
 expand = true
 stretch_mode = 4
+
+[node name="MoveButton" type="TextureButton" parent="."]
+margin_left = 9.0
+margin_top = 282.0
+margin_right = 119.0
+margin_bottom = 316.0
+rect_pivot_offset = Vector2( 70, 17 )
+texture_normal = ExtResource( 8 )
+expand = true
+
+[node name="InvestButton" type="TextureButton" parent="."]
+margin_left = 9.0
+margin_top = 324.0
+margin_right = 119.0
+margin_bottom = 358.0
+rect_pivot_offset = Vector2( 70, 17 )
+texture_normal = ExtResource( 10 )
+expand = true
+
+[node name="TextureButton" type="TextureButton" parent="."]
+margin_left = 32.0
+margin_top = 448.0
+margin_right = 96.0
+margin_bottom = 512.0
+texture_normal = ExtResource( 12 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = -1
@@ -105,6 +133,64 @@ __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
 }
+
+[node name="TurnContainer" type="TextureRect" parent="."]
+margin_right = 128.0
+margin_bottom = 64.0
+texture = ExtResource( 2 )
+stretch_mode = 2
+
+[node name="Label" type="Label" parent="TurnContainer"]
+margin_right = 128.0
+margin_bottom = 64.0
+custom_fonts/font = ExtResource( 15 )
+text = "Turn 1"
+align = 1
+valign = 1
+
+[node name="EventsContainer" type="TextureRect" parent="."]
+margin_top = 64.0
+margin_right = 128.0
+margin_bottom = 192.0
+texture = ExtResource( 2 )
+stretch_mode = 2
+
+[node name="RentLabel" type="Label" parent="EventsContainer"]
+margin_left = 4.0
+margin_right = 128.0
+margin_bottom = 32.0
+rect_pivot_offset = Vector2( -585, 320 )
+custom_fonts/font = ExtResource( 16 )
+text = "Rent goes up in:"
+valign = 2
+
+[node name="RentValue" type="Label" parent="EventsContainer"]
+margin_top = 32.0
+margin_right = 128.0
+margin_bottom = 64.0
+rect_pivot_offset = Vector2( -585, 320 )
+custom_fonts/font = ExtResource( 14 )
+text = "3 turns"
+align = 1
+
+[node name="IncomeLabel" type="Label" parent="EventsContainer"]
+margin_left = 4.0
+margin_top = 64.0
+margin_right = 128.0
+margin_bottom = 96.0
+rect_pivot_offset = Vector2( -585, 320 )
+custom_fonts/font = ExtResource( 13 )
+text = "Income goes up in:"
+valign = 2
+
+[node name="IncomeValue" type="Label" parent="EventsContainer"]
+margin_top = 96.0
+margin_right = 128.0
+margin_bottom = 128.0
+rect_pivot_offset = Vector2( -585, 320 )
+custom_fonts/font = ExtResource( 14 )
+text = "4 turns"
+align = 1
 
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]

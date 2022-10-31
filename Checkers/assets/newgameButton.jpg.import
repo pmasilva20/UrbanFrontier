@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/End Turn Disabled.png-893455b1a40d61c0a40951290a90a91d.stex"
+path="res://.import/newgameButton.jpg-fabe028106871a0bd1031957ba143b30.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/End Turn Disabled.png"
-dest_files=[ "res://.import/End Turn Disabled.png-893455b1a40d61c0a40951290a90a91d.stex" ]
+source_file="res://Checkers/assets/newgameButton.jpg"
+dest_files=[ "res://.import/newgameButton.jpg-fabe028106871a0bd1031957ba143b30.stex" ]
 
 [params]
 
