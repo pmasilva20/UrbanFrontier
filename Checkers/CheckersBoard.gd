@@ -142,7 +142,7 @@ func handle_arrival_income_increment(tile):
 			bIncome+= squareRent #this value would be 0 if white owned the tile anyway
 		if pawnTeam=="black":
 			wIncome+= squareRent
-	update_labels()
+	update_piece_income(tile)
 
 #returns how much rent a tile is currently costing
 func get_tile_rent(tile):
@@ -382,7 +382,7 @@ func king_me(tile):
 		white_team_ref.add_child(king_instance)
 		current_board[tile][1] = king_instance
 	
-	update_labels()
+	update_piece_income(tile)
 
 func invalidClick(cell):
 	return (
@@ -593,16 +593,17 @@ func update_labels():
 	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
 	for tile in current_board.keys():
 		if current_board[tile][0]:
-			var string
-			if current_board[tile][4]!="" and current_board[tile][4]!=current_board[tile][2]:
-				var value = pawnIncome-get_tile_rent(tile)
-				if value >= 0:
-					string = "+" + str(pawnIncome-get_tile_rent(tile))
-				else:
-					string = str(pawnIncome-get_tile_rent(tile))
-			else:
-				string = "+" + str(pawnIncome)
+			var value = pawnIncome-get_tile_rent(tile)
+			var string = "+" if value>=0 else "" + str(pawnIncome-get_tile_rent(tile))
 			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+
+func update_piece_income(tile):
+	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	var value = pawnIncome-get_tile_rent(tile)
+	var string = "+" if value>=0 else "" + str(pawnIncome-get_tile_rent(tile))
+	current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+
 
 func _errorpopup_click():
 	$ErrorPopup.visible = false
