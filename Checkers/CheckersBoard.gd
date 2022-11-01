@@ -30,8 +30,6 @@ var rentCost = BASE_RENT
 #even is black, 4 is king
 var current_board: Dictionary = {}
 #in format tile: [is occupied, refrence, color, is king, owner,level, buildingRef]
-onready var w_pieces_remaining: int = $W.get_child_count()
-onready var b_pieces_remaining: int = $B.get_child_count()
 
 var multijump_mode:= false
 var buy_mode = false
@@ -168,16 +166,17 @@ func end_turn():
 		pawnIncome+= INCOME_INCREMENT
 		bIncome+= black_team_ref.get_child_count() * INCOME_INCREMENT
 		wIncome+= white_team_ref.get_child_count() * INCOME_INCREMENT
+	yield(get_tree(), "idle_frame") # wait a frame
 	if black_team_ref.get_child_count()==0:
-		pass #TODO: TRIGGER GAME OVERS
+		$OrangeWinsPopup.visible = true
 	elif white_team_ref.get_child_count()==0:
-		pass
+		$BlueWinsPopup.visible = true
 	elif wMoney==0 and bMoney==0:
-		pass
+		$TiePopup.visible = true
 	elif wMoney==0:
-		pass
+		$BlueWinsPopup.visible = true
 	elif bMoney==0:
-		pass
+		$OrangeWinsPopup.visible = true
 	update_labels()
 
 
@@ -328,8 +327,6 @@ func kill_checker(tile):
 	handle_leave_income_decrement(tile)
 	current_board[tile][1].queue_free()
 	empty_tile(tile)
-	b_pieces_remaining = black_team_ref.get_child_count()
-	w_pieces_remaining = white_team_ref.get_child_count()
 
 
 func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
@@ -414,7 +411,6 @@ func _on_Cursor_accept_pressed(cell):
 			if(coord_data[0]):#jumping
 				var kingmaker = move_piece(coord_data[1], cell)
 				kill_checker(coord_data[2])
-				
 				search_for_jumps_only(cell)
 				var can_multijump = public_viable_locations.size()!=0 and not kingmaker
 				if(not can_multijump):
@@ -426,7 +422,6 @@ func _on_Cursor_accept_pressed(cell):
 					multijump_mode = true
 					$EndTurn.disabled = false
 					show_possible_moves(cell)
-					print(public_viable_locations)
 		elif not multijump_mode:
 			clear_move_markers()
 	selecting_destination = false
@@ -474,7 +469,6 @@ func _on_click_buymode():
 		child.get_node("InvestView").visible = true
 	for tile in current_board.values():
 		if tile[6] != null:
-			print(tile)
 			tile[6].get_node("Border").visible = false
 			tile[6].get_node("Level"+str(tile[5])).visible = true
 
@@ -490,7 +484,6 @@ func _on_click_movemode():
 		child.get_node("MoveView").visible = true
 	for tile in current_board.values():
 		if tile[6] != null:
-			print(tile)
 			tile[6].get_node("Border").visible = true
 			tile[6].get_node("Level0").visible = false
 			tile[6].get_node("Level1").visible = false
@@ -621,3 +614,9 @@ func _helppopup_click():
 
 func _on_HelpButton_pressed():
 	$HelpPopup.visible = true
+
+func _endpopup_click():
+	new_game()
+	$OrangeWinsPopup.visible = false
+	$BlueWinsPopup.visible = false
+	$TiePopup.visible = false

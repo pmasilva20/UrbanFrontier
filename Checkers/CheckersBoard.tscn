@@ -371,7 +371,7 @@ expand = true
 margin_left = 208.0
 margin_top = 288.0
 margin_right = 464.0
-margin_bottom = 353.0
+margin_bottom = 352.0
 mouse_filter = 2
 texture = ExtResource( 7 )
 expand = true
@@ -421,6 +421,84 @@ Primeiro jogador sem peças ou dinheiro perde."
 valign = 1
 autowrap = true
 
+[node name="OrangeWinsPopup" type="TextureButton" parent="."]
+visible = false
+margin_right = 672.0
+margin_bottom = 640.0
+texture_normal = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="OrangeWinsPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+mouse_filter = 2
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="OrangeWinsPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+custom_fonts/font = ExtResource( 14 )
+text = "Orange WINS!"
+align = 1
+valign = 1
+
+[node name="BlueWinsPopup" type="TextureButton" parent="."]
+visible = false
+margin_right = 672.0
+margin_bottom = 640.0
+texture_normal = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="BlueWinsPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+mouse_filter = 2
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="BlueWinsPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+custom_fonts/font = ExtResource( 14 )
+text = "Blue WINS!"
+align = 1
+valign = 1
+
+[node name="TiePopup" type="TextureButton" parent="."]
+visible = false
+margin_right = 672.0
+margin_bottom = 640.0
+texture_normal = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="TiePopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+mouse_filter = 2
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="TiePopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+custom_fonts/font = ExtResource( 14 )
+text = "TIE!"
+align = 1
+valign = 1
+
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]
@@ -434,3 +512,6 @@ autowrap = true
 [connection signal="pressed" from="TradePopup/CancelButton" to="." method="_on_purchase_cancel"]
 [connection signal="pressed" from="ErrorPopup" to="." method="_errorpopup_click"]
 [connection signal="pressed" from="HelpPopup" to="." method="_helppopup_click"]
+[connection signal="pressed" from="OrangeWinsPopup" to="." method="_endpopup_click"]
+[connection signal="pressed" from="BlueWinsPopup" to="." method="_endpopup_click"]
+[connection signal="pressed" from="TiePopup" to="." method="_endpopup_click"]
