@@ -516,6 +516,7 @@ func _on_trade_complete():
 		else:
 			wMoney -= $TradePopup/SpinBox.value
 			bMoney += $TradePopup/SpinBox.value
+			building_team_ref.remove_child(current_board[trading_cell][6])
 			add_building()
 	else:
 		if $TradePopup/SpinBox.value > bMoney:
@@ -523,6 +524,7 @@ func _on_trade_complete():
 		else:
 			bMoney -= $TradePopup/SpinBox.value
 			wMoney += $TradePopup/SpinBox.value
+			building_team_ref.remove_child(current_board[trading_cell][6])
 			add_building()
 	$TradePopup.visible = false
 
@@ -538,14 +540,15 @@ func add_building():
 		neighbour = current_board[neighbourcell]
 		if neighbour[4]!="":
 			rank+=1
-			if neighbour[1]!=null:
-				handle_leave_income_decrement(neighbourcell)
-				neighbour[5]+=1
-				handle_arrival_income_increment(neighbourcell)
-			else:
-				neighbour[5]+=1
-			neighbour[6].get_children()[neighbour[5]-1].visible = false
-			neighbour[6].get_children()[neighbour[5]].visible = true
+			if current_board[trading_cell][6] == null:
+				if neighbour[1]!=null:
+					handle_leave_income_decrement(neighbourcell)
+					neighbour[5]+=1
+					handle_arrival_income_increment(neighbourcell)
+				else:
+					neighbour[5]+=1
+				neighbour[6].get_children()[neighbour[5]-1].visible = false
+				neighbour[6].get_children()[neighbour[5]].visible = true
 	current_board[trading_cell][5]=rank
 	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
 	handle_arrival_income_increment(trading_cell)
