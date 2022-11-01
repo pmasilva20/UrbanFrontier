@@ -1,14 +1,40 @@
 extends Node2D
 
+const START_MONEY = 50
+const START_INCOME = 48
+
+const TRANSFER_PERIOD = 2
+const RENT_RISE_PERIOD = 6
+const INCOME_RISE_PERIOD = 8
+
+const BASE_PAWN_INCOME = 5
+const BASE_RENT = 1
+const BASE_PURCHASE_PRICE = 10
+
+const RENT_INCREMENT = 1
+const PURCHASE_PRICE_INCREMENT = 2
+const INCOME_INCREMENT = 1
+
+
+var	bMoney = START_MONEY
+var wMoney = START_MONEY
+var bIncome = START_INCOME
+var wIncome = START_INCOME
+	
+var pawnIncome = BASE_PAWN_INCOME
+var purchaseCost = BASE_PURCHASE_PRICE
+var rentCost = BASE_RENT
+
 #0 is unpopulated 
 #odd is white, 3 is king
 #even is black, 4 is king
 var current_board: Dictionary = {}
-#in format tile: [is occupied, refrence, color, is king]
+#in format tile: [is occupied, refrence, color, is king, owner,level]
 onready var w_pieces_remaining: int = $W.get_child_count()
 onready var b_pieces_remaining: int = $B.get_child_count()
 
 var multijump_mode:= false
+var buy_mode = false
 
 var selecting_destination := false
 var selected_tile: Vector2
@@ -40,13 +66,14 @@ func _ready():
 func empty_board():
 	for y in 8:
 		for x in 8:
-			current_board[Vector2(x, y)] = [false, null, "", false]
-#in format is occupied, refrence, color, is king
+			current_board[Vector2(x, y)] = [false, null, "", false,"",0]
+#in format is occupied, refrence, color, is king,owner,level
 
-
+#only seems to be called from the start game methods
 func update_board():	
 	update_board_group(black_team_ref.get_children(),"black")
 	update_board_group(white_team_ref.get_children(),"white")
+
 
 func update_board_group(group,faction):
 	for x in group:
@@ -66,9 +93,11 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 		Tween.TRANS_QUAD, Tween.EASE_IN_OUT)
 		$Tween.start()
 		
-		current_board[destination] = current_board[initial_coord]
-		clear_tile_data(initial_coord)
-		
+		handle_leave_income_decrement(initial_coord)
+		for x in 4:
+			current_board[destination][x] = current_board[initial_coord][x]
+		empty_tile(initial_coord)
+		handle_arrival_income_increment(destination)
 		var team = current_board[destination][2]
 		if((team == "white") and (destination.y == 7)):
 			current_board[destination][3] = true
@@ -86,14 +115,77 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
 
 
+func handle_leave_income_decrement(tile):
+	var pawnTeam = current_board[tile][2]
+	var squareRent = get_tile_rent(tile) #this is 0 if tile is owned by occupant
+	if pawnTeam=="white":
+		wIncome-= (pawnIncome-squareRent)
+	elif pawnTeam=="black":
+		bIncome-= (pawnIncome-squareRent)
+	
+	if current_board[tile][4]!="": #player owned tile
+		if pawnTeam=="white":
+			bIncome-= squareRent #this value would be 0 if white owned the tile anyway
+		if pawnTeam=="black":
+			wIncome-= squareRent
+
+func handle_arrival_income_increment(tile):
+	var pawnTeam = current_board[tile][2]
+	var squareRent = get_tile_rent(tile) #this is 0 if tile is owned by occupant
+	if pawnTeam=="white":
+		wIncome+= (pawnIncome-squareRent)
+	elif pawnTeam=="black":
+		bIncome+= (pawnIncome-squareRent)
+	if current_board[tile][4]!="": #player owned tile
+		if pawnTeam=="white":
+			bIncome+= squareRent #this value would be 0 if white owned the tile anyway
+		if pawnTeam=="black":
+			wIncome+= squareRent
+
+#returns how much rent a tile is currently costing
+func get_tile_rent(tile):
+	if current_board[tile][4]==current_board[tile][2]: #tile is owned by occupant
+		return 0
+	var rent = rentCost
+	if current_board[tile][4]!="" and current_board[tile][5]!=0:
+		rent+= pow(2,current_board[tile][5]-1)
+	return rent
+
+
 func end_turn():
 	clear_move_markers()
 	turn_index += 1
-	#TODO: INCOME MECHANICS UPDATE HERE
-
-
-func clear_tile_data(tile):
-	current_board[tile] = [false, null, "", false]
+	
+	#TODO: NOTIFY UI OF MONETARY TRANSACTIONS, maybe a signal?
+	if turn_index%TRANSFER_PERIOD==0: #rent charging
+		bMoney+=bIncome
+		wMoney+=wIncome
+	if turn_index%RENT_RISE_PERIOD==0: #rent rising
+		rentCost += RENT_INCREMENT
+		purchaseCost+= PURCHASE_PRICE_INCREMENT
+		bIncome-= black_team_ref.get_child_count() * RENT_INCREMENT
+		wIncome-= white_team_ref.get_child_count() * RENT_INCREMENT
+	if turn_index%INCOME_RISE_PERIOD==0: #income improvement
+		pawnIncome+= INCOME_INCREMENT
+		bIncome+= black_team_ref.get_child_count() * INCOME_INCREMENT
+		wIncome+= white_team_ref.get_child_count() * INCOME_INCREMENT
+	if black_team_ref.get_child_count()==0:
+		pass #TODO: TRIGGER GAME OVERS
+	elif white_team_ref.get_child_count()==0:
+		pass
+	elif wMoney==0 and bMoney==0:
+		pass
+	elif wMoney==0:
+		pass
+	elif bMoney==0:
+		pass
+	
+#called for peaceful movement only
+func empty_tile(tile):
+	current_board[tile][0] = false
+	current_board[tile][1] = null
+	current_board[tile][2] = ""
+	current_board[tile][3] = false
 
 
 func _unhandled_input(event):
@@ -122,6 +214,15 @@ func new_game():
 	white_team_ref.queue_free()
 	black_team_ref.queue_free()
 	
+	bMoney = START_MONEY
+	wMoney = START_MONEY
+	bIncome = START_INCOME
+	wIncome = START_INCOME
+	
+	pawnIncome = BASE_PAWN_INCOME
+	purchaseCost = BASE_PURCHASE_PRICE
+	rentCost = BASE_RENT
+	
 	var w_instance = white_team.instance()
 	white_team_ref = w_instance
 	add_child(w_instance)
@@ -138,7 +239,6 @@ func new_game():
 
 
 func position_move_data(check_position: Vector2):
-	
 	var team =   current_board[check_position][2]
 	var is_king = current_board[check_position][3]
 	
@@ -173,8 +273,6 @@ func position_move_data(check_position: Vector2):
 
 
 func search_for_jumps_only(tile):
-	
-	#TODO: CONSIDER ADDING MULTIPLE TILE JUMP FOR KING TILE HERE
 	var team =   current_board[tile][2]
 	var is_king = current_board[tile][3]
 	
@@ -195,6 +293,7 @@ func search_for_jumps_only(tile):
 
 
 func spawn_move_marker(coord):
+	#TODO: GET MOVEMENT COST DELTA  HERE, MOVE IT TO A PROPERTY IN MARKER INSTANCE SO IT'LL RENDER
 	var world_position: Vector2 = ($Board.map_to_world(coord) + Vector2(32, 32))
 	var marker_instance = move_marker.instance()
 	marker_instance.set_position(world_position)
@@ -207,20 +306,18 @@ func show_possible_moves():
 
 
 func clear_move_markers():
-	
 	for child in $ViableLocations.get_children():
 		child.queue_free()
 
 
 func kill_checker(tile):
+	handle_leave_income_decrement(tile)
 	current_board[tile][1].queue_free()
-	current_board[tile] = [false, null, "", false]
+	empty_tile(tile)
 	b_pieces_remaining = black_team_ref.get_child_count()
 	w_pieces_remaining = white_team_ref.get_child_count()
-	#TODO: UPDATE INCOME INFO HERE
 
 
-#0 is if it is filled, 2 is by whom
 func check_adjacent_for_move(tile: Vector2, vector_direction: Vector2):
 	#returns in format [can_move, can_jump, [tile, adjacent_tile, jump_tile]]
 	var adjacent_tile: Vector2 = (tile + vector_direction)
@@ -281,8 +378,7 @@ func invalidClick(cell):
 		#or (not selecting_destination and not multijump_mode) and (current_board[cell][2] != teams[turn_index%2]) #filled cell,wrong team
 	)
 func _on_Cursor_accept_pressed(cell):
-	#TODO: MAKE ANOTHER FUNCTION FOR BUY MODE AND TOGGLE BETWEEN THESE 2
-	if invalidClick(cell):
+	if buy_mode or invalidClick(cell):
 		return
 	
 	#first click for movement prediction
@@ -313,7 +409,6 @@ func _on_Cursor_accept_pressed(cell):
 					clear_move_markers()
 					multijump_mode = true
 					$EndTurn.disabled = false
-					#todo: defer rendering somehow
 					show_possible_moves()
 					print(public_viable_locations)
 		elif not multijump_mode:
