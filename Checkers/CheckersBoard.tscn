@@ -116,6 +116,7 @@ margin_top = 282.0
 margin_right = 119.0
 margin_bottom = 316.0
 rect_pivot_offset = Vector2( 70, 17 )
+disabled = true
 texture_normal = ExtResource( 10 )
 texture_pressed = ExtResource( 20 )
 texture_disabled = ExtResource( 20 )

@@ -62,9 +62,7 @@ func _ready():
 	empty_board()
 	update_board()
 	update_labels()
-	# How to edit checker counter
-	var checker = white_team_ref.get_node("WChecker")
-	checker.get_node("MoveView").get_node("Counter").get_node("Label").text = "+2"
+	
 
 func empty_board():
 	for y in 8:
@@ -144,6 +142,7 @@ func handle_arrival_income_increment(tile):
 			bIncome+= squareRent #this value would be 0 if white owned the tile anyway
 		if pawnTeam=="black":
 			wIncome+= squareRent
+	update_labels()
 
 #returns how much rent a tile is currently costing
 func get_tile_rent(tile):
@@ -159,7 +158,6 @@ func end_turn():
 	clear_move_markers()
 	turn_index += 1
 	
-	#TODO: NOTIFY UI OF MONETARY TRANSACTIONS, maybe a signal?
 	if turn_index%TRANSFER_PERIOD==0: #rent charging
 		bMoney+=bIncome
 		wMoney+=wIncome
@@ -308,6 +306,13 @@ func spawn_move_marker(coord):
 	var world_position: Vector2 = ($Board.map_to_world(coord) + Vector2(32, 32))
 	var marker_instance = move_marker.instance()
 	marker_instance.set_position(world_position)
+	var delta = get_tile_rent(selected_tile) - get_tile_rent(coord)
+	if delta > 0:
+		marker_instance.get_node("Label").text = "+" + str(delta)
+	elif delta == 0:
+		marker_instance.get_node("Label").text = ""
+	else:
+		marker_instance.get_node("Label").text = str(delta)
 	$ViableLocations.add_child(marker_instance)
 
 
@@ -457,6 +462,8 @@ func _on_click_buymode():
 	if multijump_mode:
 		return
 	buy_mode = true
+	$InvestButton.disabled = true
+	$MoveButton.disabled = false
 	selecting_destination = false
 	clear_move_markers()
 	for child in black_team_ref.get_children():
@@ -473,6 +480,8 @@ func _on_click_buymode():
 
 func _on_click_movemode():
 	buy_mode = false
+	$MoveButton.disabled = true
+	$InvestButton.disabled = false
 	for child in black_team_ref.get_children():
 		child.get_node("InvestView").visible = false
 		child.get_node("MoveView").visible = true
@@ -501,12 +510,14 @@ func _on_purchase_complete():
 		else:
 			wMoney -= purchaseCost
 			add_building()
+			_on_click_movemode()
 	else:
 		if purchaseCost > bMoney:
 			$ErrorPopup.visible = true
 		else:
 			bMoney -= purchaseCost
 			add_building()
+			_on_click_movemode()
 	$PurchasePopup.visible = false
 
 func _on_trade_complete():
@@ -518,6 +529,7 @@ func _on_trade_complete():
 			bMoney += $TradePopup/SpinBox.value
 			building_team_ref.remove_child(current_board[trading_cell][6])
 			add_building()
+			_on_click_movemode()
 	else:
 		if $TradePopup/SpinBox.value > bMoney:
 			$ErrorPopup.visible = true
@@ -526,6 +538,7 @@ func _on_trade_complete():
 			wMoney += $TradePopup/SpinBox.value
 			building_team_ref.remove_child(current_board[trading_cell][6])
 			add_building()
+			_on_click_movemode()
 	$TradePopup.visible = false
 
 func add_building():
@@ -577,6 +590,18 @@ func update_labels():
 	$EventsContainer/RentValue.text = str(rent_period - true_round%rent_period) + " turns"
 	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
 	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	for tile in current_board.keys():
+		if current_board[tile][0]:
+			var string
+			if current_board[tile][4]!="" and current_board[tile][4]!=current_board[tile][2]:
+				var value = pawnIncome-get_tile_rent(tile)
+				if value >= 0:
+					string = "+" + str(pawnIncome-get_tile_rent(tile))
+				else:
+					string = str(pawnIncome-get_tile_rent(tile))
+			else:
+				string = "+" + str(pawnIncome)
+			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
 
 func _errorpopup_click():
 	$ErrorPopup.visible = false
