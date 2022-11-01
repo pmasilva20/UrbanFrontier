@@ -311,7 +311,7 @@ func spawn_move_marker(coord,from_tile):
 		if current_board[coord][4]!="": #owned by other guy
 			delta-= pow(2, current_board[coord][5]-1) #subtract boost
 			
-	marker_instance.get_node("Label").text = "+" if delta>=0 else "" + delta
+	marker_instance.get_node("Label").text = ("+" if delta>=0 else "") + str(delta)
 	$ViableLocations.add_child(marker_instance)
 
 
@@ -493,11 +493,11 @@ func _on_click_movemode():
 		if tile[6] != null:
 			print(tile)
 			tile[6].get_node("Border").visible = true
+			tile[6].get_node("Level0").visible = false
 			tile[6].get_node("Level1").visible = false
 			tile[6].get_node("Level2").visible = false
 			tile[6].get_node("Level3").visible = false
 			tile[6].get_node("Level4").visible = false
-			tile[6].get_node("Level5").visible = false
 	
 func _on_purchase_cancel():
 	trading_cell = null
@@ -545,7 +545,7 @@ func _on_trade_complete():
 func add_building():
 	var directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
 	var neighbour
-	var rank = 1
+	var rank = 0
 	handle_leave_income_decrement(trading_cell)
 	for x in directions_to_check: 
 		var neighbourcell = trading_cell+x
@@ -561,8 +561,8 @@ func add_building():
 					handle_arrival_income_increment(neighbourcell)
 				else:
 					neighbour[5]+=1
-				neighbour[6].get_children()[neighbour[5]-1].visible = false
-				neighbour[6].get_children()[neighbour[5]].visible = true
+				neighbour[6].get_children()[neighbour[5]].visible = false
+				neighbour[6].get_children()[neighbour[5]+1].visible = true
 	current_board[trading_cell][5]=rank
 	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
 	handle_arrival_income_increment(trading_cell)
@@ -576,7 +576,7 @@ func add_building():
 	building.position.x = coord.x + 144
 	building.position.y = coord.y + 64
 	building_team_ref.add_child(building)
-	building.get_children()[current_board[trading_cell][5]].visible = true
+	building.get_children()[current_board[trading_cell][5]+1].visible = true
 	current_board[trading_cell][6] = building
 	
 	trading_cell = null
@@ -594,15 +594,16 @@ func update_labels():
 	for tile in current_board.keys():
 		if current_board[tile][0]:
 			var value = pawnIncome-get_tile_rent(tile)
-			var string = "+" if value>=0 else "" + (pawnIncome-get_tile_rent(tile))
+			var string = ("+" if value>=0 else "") + str(value)
 			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
 
 func update_piece_income(tile):
 	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
 	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
-	var value = pawnIncome-get_tile_rent(tile)
-	var string = "+" if value>=0 else "" + (pawnIncome-get_tile_rent(tile))
-	current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+	if current_board[tile][0]:
+		var value = pawnIncome-get_tile_rent(tile)
+		var string = ("+" if value>=0 else "") + str(value)
+		current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
 
 
 func _errorpopup_click():
