@@ -495,23 +495,35 @@ func _on_purchase_cancel():
 	$TradePopup.visible = false
 
 func _on_purchase_complete():
-	#TODO: sanitize so purchase cant be made if not enough money
 	if turn_index%2:
-		wMoney -= purchaseCost
+		if purchaseCost > wMoney:
+			$ErrorPopup.visible = true
+		else:
+			wMoney -= purchaseCost
+			add_building()
 	else:
-		bMoney -= purchaseCost
-	add_building()
+		if purchaseCost > bMoney:
+			$ErrorPopup.visible = true
+		else:
+			bMoney -= purchaseCost
+			add_building()
 	$PurchasePopup.visible = false
 
 func _on_trade_complete():
-	#TODO: sanitize so trade cant be made if not enough money
 	if turn_index%2:
-		wMoney -= $TradePopup/SpinBox.value
-		bMoney += $TradePopup/SpinBox.value
+		if $TradePopup/SpinBox.value > wMoney:
+			$ErrorPopup.visible = true
+		else:
+			wMoney -= $TradePopup/SpinBox.value
+			bMoney += $TradePopup/SpinBox.value
+			add_building()
 	else:
-		bMoney -= $TradePopup/SpinBox.value
-		wMoney += $TradePopup/SpinBox.value
-	add_building()
+		if $TradePopup/SpinBox.value > bMoney:
+			$ErrorPopup.visible = true
+		else:
+			bMoney -= $TradePopup/SpinBox.value
+			wMoney += $TradePopup/SpinBox.value
+			add_building()
 	$TradePopup.visible = false
 
 func add_building():

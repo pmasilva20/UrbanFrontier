@@ -351,6 +351,7 @@ texture_normal = ExtResource( 26 )
 expand = true
 
 [node name="ErrorPopup" type="TextureButton" parent="."]
+visible = false
 margin_right = 672.0
 margin_bottom = 640.0
 texture_normal = ExtResource( 25 )
