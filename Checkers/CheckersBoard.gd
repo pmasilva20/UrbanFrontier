@@ -302,7 +302,6 @@ func search_for_jumps_only(tile):
 
 
 func spawn_move_marker(coord):
-	#TODO: GET MOVEMENT COST DELTA  HERE, MOVE IT TO A PROPERTY IN MARKER INSTANCE SO IT'LL RENDER
 	var world_position: Vector2 = ($Board.map_to_world(coord) + Vector2(32, 32))
 	var marker_instance = move_marker.instance()
 	marker_instance.set_position(world_position)
@@ -382,6 +381,8 @@ func king_me(tile):
 		king_instance.set_position(world_pos)
 		white_team_ref.add_child(king_instance)
 		current_board[tile][1] = king_instance
+	
+	update_labels()
 
 func invalidClick(cell):
 	return (
