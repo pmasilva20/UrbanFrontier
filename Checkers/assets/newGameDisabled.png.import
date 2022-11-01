@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/investButton.jpg-b89db53106a3270bb6a35367b0437506.stex"
+path="res://.import/newGameDisabled.png-2d8f75754571211b262e2f06327db884.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/investButton.jpg"
-dest_files=[ "res://.import/investButton.jpg-b89db53106a3270bb6a35367b0437506.stex" ]
+source_file="res://Checkers/assets/newGameDisabled.png"
+dest_files=[ "res://.import/newGameDisabled.png-2d8f75754571211b262e2f06327db884.stex" ]
 
 [params]
 

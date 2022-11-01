@@ -25,8 +25,6 @@ var pawnIncome = BASE_PAWN_INCOME
 var purchaseCost = BASE_PURCHASE_PRICE
 var rentCost = BASE_RENT
 
-var moveView = true
-
 #0 is unpopulated 
 #odd is white, 3 is king
 #even is black, 4 is king
@@ -217,6 +215,7 @@ func new_game():
 	empty_board()
 	white_team_ref.queue_free()
 	black_team_ref.queue_free()
+	building_team_ref.queue_free()
 	
 	bMoney = START_MONEY
 	wMoney = START_MONEY
@@ -419,13 +418,19 @@ func _on_Cursor_accept_pressed(cell):
 			clear_move_markers()
 	selecting_destination = false
 
+func _on_EndTurn_pressed():
+	end_turn()
+	selecting_destination = false
+	$EndTurn.disabled = true
+	multijump_mode = false
+	
 
 func investCursorPressed(cell):
 	if current_board[cell][4] != "":
 		return
 	
 	var building
-	if current_board[cell][2] == "white":
+	if turn_index%2:
 		building = white_building.instance()
 	else:
 		building = black_building.instance()
@@ -441,11 +446,11 @@ func investCursorPressed(cell):
 	current_board[cell][5] = 1
 	building.get_node("Level1").visible = true
 	
-	#TODO: end turn
+	end_turn()
 
 
 func _on_MoveButton_pressed():
-	moveView = true
+	buy_mode = false
 	for child in black_team_ref.get_children():
 		child.get_node("InvestView").visible = false
 		child.get_node("MoveView").visible = true
@@ -462,7 +467,7 @@ func _on_MoveButton_pressed():
 
 
 func _on_InvestButton_pressed():
-	moveView = false
+	buy_mode = true
 	for child in black_team_ref.get_children():
 		child.get_node("MoveView").visible = false
 		child.get_node("InvestView").visible = true

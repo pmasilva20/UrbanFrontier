@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/moveButton.jpg-af0e6cdb7f967b998beffc0d4f79f273.stex"
+path="res://.import/investButtonDisabled.png-60767b438ecf0edf8d4f332adfcac31e.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/moveButton.jpg"
-dest_files=[ "res://.import/moveButton.jpg-af0e6cdb7f967b998beffc0d4f79f273.stex" ]
+source_file="res://Checkers/assets/investButtonDisabled.png"
+dest_files=[ "res://.import/investButtonDisabled.png-60767b438ecf0edf8d4f332adfcac31e.stex" ]
 
 [params]
 
