@@ -37,7 +37,6 @@ var multijump_mode:= false
 var buy_mode = false
 
 var selecting_destination := false
-var selected_tile: Vector2
 var public_viable_locations:= {}
 var trading_cell = null
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
@@ -207,7 +206,7 @@ func _unhandled_input(event):
 			#this seems to go into move preview mode
 			selecting_destination = true
 			position_move_data(map_cell_pos)
-			show_possible_moves()
+			show_possible_moves(map_cell_pos)
 		elif not multijump_mode:
 			selecting_destination = false
 			clear_move_markers()
@@ -301,23 +300,24 @@ func search_for_jumps_only(tile):
 	public_viable_locations = viable_locations
 
 
-func spawn_move_marker(coord):
+func spawn_move_marker(coord,from_tile):
 	var world_position: Vector2 = ($Board.map_to_world(coord) + Vector2(32, 32))
 	var marker_instance = move_marker.instance()
 	marker_instance.set_position(world_position)
-	var delta = get_tile_rent(selected_tile) - get_tile_rent(coord)
-	if delta > 0:
-		marker_instance.get_node("Label").text = "+" + str(delta)
-	elif delta == 0:
-		marker_instance.get_node("Label").text = ""
-	else:
-		marker_instance.get_node("Label").text = str(delta)
+	
+	var delta = get_tile_rent(from_tile) #we will no longer be paying this rent value
+	if not tile_owned_by_current_player(coord):
+		delta-= rentCost #we will be paying this rent value
+		if current_board[coord][4]!="": #owned by other guy
+			delta-= pow(2, current_board[coord][5]-1) #subtract boost
+			
+	marker_instance.get_node("Label").text = "+" if delta>=0 else "" + delta
 	$ViableLocations.add_child(marker_instance)
 
 
-func show_possible_moves():
+func show_possible_moves(cell):
 	for coord in public_viable_locations:
-		spawn_move_marker(coord)
+		spawn_move_marker(coord,cell)
 
 
 func clear_move_markers():
@@ -402,7 +402,7 @@ func _on_Cursor_accept_pressed(cell):
 	if(not selecting_destination and not multijump_mode):
 		selecting_destination = true
 		position_move_data(cell)
-		show_possible_moves()
+		show_possible_moves(cell)
 		return
 	#time to actually move
 	elif(selecting_destination or multijump_mode):
@@ -426,7 +426,7 @@ func _on_Cursor_accept_pressed(cell):
 					clear_move_markers()
 					multijump_mode = true
 					$EndTurn.disabled = false
-					show_possible_moves()
+					show_possible_moves(cell)
 					print(public_viable_locations)
 		elif not multijump_mode:
 			clear_move_markers()
@@ -594,14 +594,14 @@ func update_labels():
 	for tile in current_board.keys():
 		if current_board[tile][0]:
 			var value = pawnIncome-get_tile_rent(tile)
-			var string = "+" if value>=0 else "" + str(pawnIncome-get_tile_rent(tile))
+			var string = "+" if value>=0 else "" + (pawnIncome-get_tile_rent(tile))
 			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
 
 func update_piece_income(tile):
 	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
 	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
 	var value = pawnIncome-get_tile_rent(tile)
-	var string = "+" if value>=0 else "" + str(pawnIncome-get_tile_rent(tile))
+	var string = "+" if value>=0 else "" + (pawnIncome-get_tile_rent(tile))
 	current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
 
 
