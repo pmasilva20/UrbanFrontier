@@ -39,6 +39,7 @@ var buy_mode = false
 var selecting_destination := false
 var selected_tile: Vector2
 var public_viable_locations:= {}
+var trading_cell = null
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
 
 #we can use this as a state machine
@@ -199,7 +200,7 @@ func _unhandled_input(event):
 		if((not current_board[map_cell_pos][0]) and (not selecting_destination)):
 			return
 		
-		if not selecting_destination and not multijump_mode:
+		if not selecting_destination and not multijump_mode and not buy_mode:
 			#this seems to go into move preview mode
 			selecting_destination = true
 			position_move_data(map_cell_pos)
@@ -207,6 +208,9 @@ func _unhandled_input(event):
 		elif not multijump_mode:
 			selecting_destination = false
 			clear_move_markers()
+		elif buy_mode:
+			pass #TODO: FIGURE OUT WHAT DROPPED INPUTS SHOULD DO FOR BUYMODE
+		
 
 
 func new_game():
@@ -420,4 +424,56 @@ func _on_EndTurn_pressed():
 	selecting_destination = false
 	$EndTurn.disabled = true
 	multijump_mode = false
+	
+
+func _on_Cursor_accept_pressed_buymode(cell):
+	if not buy_mode or tile_not_for_purchase(cell):
+		return
+	trading_cell = cell
+	if current_board[cell][4]=="":
+		pass #TODO: purchase prompt with cost purchaseCost and locked cost field
+	else:
+		pass #TODO: purchase prompt with editable cost field
+		
+func tile_not_for_purchase(cell):
+	return tile_is_white(cell) or tile_owned_by_current_player(cell)
+
+func tile_is_white(cell:Vector2):
+	return int(cell.x+cell.y)%2==1
+	
+func tile_owned_by_current_player(cell:Vector2):
+	return current_board[cell][4]== ("black" if turn_index%2==0 else "white")
+	
+func _on_click_buymode():
+	if multijump_mode:
+		return
+	buy_mode = true
+	selecting_destination = false
+	clear_move_markers()
+
+func _on_click_movemode():
+	buy_mode = false
+	
+func _on_purchase_cancel():
+	trading_cell = null
+func _on_purchase_complete():
+	var directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
+	var neighbour
+	var rank = 0
+	handle_leave_income_decrement(trading_cell)
+	for x in directions_to_check: 
+		neighbour = current_board[trading_cell+x]
+		if neighbour[4]!="":
+			rank+=1
+			if neighbour[1]!=null:
+				handle_leave_income_decrement(neighbour)
+				neighbour[5]+=1
+				handle_arrival_income_increment(neighbour)
+			else:
+				neighbour[5]+=1
+	current_board[trading_cell][5]=rank
+	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
+	handle_arrival_income_increment(trading_cell)
+	trading_cell = null
+	end_turn()
 	
