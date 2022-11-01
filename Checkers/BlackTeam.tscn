@@ -3,7 +3,7 @@
 [ext_resource path="res://Checkers/BChecker.tscn" type="PackedScene" id=1]
 
 [node name="B" type="Node2D"]
-position = Vector2( 0, 64 )
+position = Vector2( 144, 64 )
 
 [node name="BChecker" parent="." instance=ExtResource( 1 )]
 position = Vector2( 96, 480 )

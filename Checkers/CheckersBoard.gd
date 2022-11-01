@@ -29,7 +29,7 @@ var rentCost = BASE_RENT
 #odd is white, 3 is king
 #even is black, 4 is king
 var current_board: Dictionary = {}
-#in format tile: [is occupied, refrence, color, is king, owner,level]
+#in format tile: [is occupied, refrence, color, is king, owner,level, buildingRef]
 onready var w_pieces_remaining: int = $W.get_child_count()
 onready var b_pieces_remaining: int = $B.get_child_count()
 
@@ -37,7 +37,6 @@ var multijump_mode:= false
 var buy_mode = false
 
 var selecting_destination := false
-var selected_tile: Vector2
 var public_viable_locations:= {}
 var trading_cell = null
 #contents will be formated {destination: [is_jumping, starting_point, jumped_tile(if applicable)]}
@@ -53,21 +52,21 @@ onready var white_team_ref =$W
 onready var black_team_ref =$B
 onready var black_king = preload("res://Checkers/BKing.tscn")
 onready var white_king = preload("res://Checkers/WKing.tscn")
-
+onready var white_building = preload("res://Checkers/WBuilding.tscn")
+onready var black_building = preload("res://Checkers/BBuilding.tscn")
+onready var building_team_ref = $BuildingTeam
 
 
 func _ready():
 	empty_board()
 	update_board()
+	update_labels()
 	
-	# How to edit checker counter
-	var checker = white_team_ref.get_node("WChecker")
-	checker.get_node("Counter").get_node("Label").text = "+2"
 
 func empty_board():
 	for y in 8:
 		for x in 8:
-			current_board[Vector2(x, y)] = [false, null, "", false,"",0]
+			current_board[Vector2(x, y)] = [false, null, "", false,"",0,null]
 #in format is occupied, refrence, color, is king,owner,level
 
 #only seems to be called from the start game methods
@@ -80,7 +79,7 @@ func update_board_group(group,faction):
 	for x in group:
 		var position = x.get_position()
 		var coord: Vector2 = $Board.world_to_map(position)	
-		current_board[coord] = [true, x, faction, x.is_in_group("King")]
+		current_board[coord] = [true, x, faction, x.is_in_group("King"), current_board[coord][4], current_board[coord][5], current_board[coord][6]]
 	
 #returns true if makes king	
 func move_piece(initial_coord: Vector2, destination: Vector2):
@@ -142,6 +141,7 @@ func handle_arrival_income_increment(tile):
 			bIncome+= squareRent #this value would be 0 if white owned the tile anyway
 		if pawnTeam=="black":
 			wIncome+= squareRent
+	update_piece_income(tile)
 
 #returns how much rent a tile is currently costing
 func get_tile_rent(tile):
@@ -157,7 +157,6 @@ func end_turn():
 	clear_move_markers()
 	turn_index += 1
 	
-	#TODO: NOTIFY UI OF MONETARY TRANSACTIONS, maybe a signal?
 	if turn_index%TRANSFER_PERIOD==0: #rent charging
 		bMoney+=bIncome
 		wMoney+=wIncome
@@ -180,7 +179,10 @@ func end_turn():
 		pass
 	elif bMoney==0:
 		pass
-	
+	update_labels()
+
+
+
 #called for peaceful movement only
 func empty_tile(tile):
 	current_board[tile][0] = false
@@ -204,7 +206,7 @@ func _unhandled_input(event):
 			#this seems to go into move preview mode
 			selecting_destination = true
 			position_move_data(map_cell_pos)
-			show_possible_moves()
+			show_possible_moves(map_cell_pos)
 		elif not multijump_mode:
 			selecting_destination = false
 			clear_move_markers()
@@ -217,6 +219,7 @@ func new_game():
 	empty_board()
 	white_team_ref.queue_free()
 	black_team_ref.queue_free()
+	building_team_ref.queue_free()
 	
 	bMoney = START_MONEY
 	wMoney = START_MONEY
@@ -240,6 +243,7 @@ func new_game():
 	
 	update_board()
 	turn_index = 0
+	update_labels()
 
 
 func position_move_data(check_position: Vector2):
@@ -296,17 +300,24 @@ func search_for_jumps_only(tile):
 	public_viable_locations = viable_locations
 
 
-func spawn_move_marker(coord):
-	#TODO: GET MOVEMENT COST DELTA  HERE, MOVE IT TO A PROPERTY IN MARKER INSTANCE SO IT'LL RENDER
+func spawn_move_marker(coord,from_tile):
 	var world_position: Vector2 = ($Board.map_to_world(coord) + Vector2(32, 32))
 	var marker_instance = move_marker.instance()
 	marker_instance.set_position(world_position)
+	
+	var delta = get_tile_rent(from_tile) #we will no longer be paying this rent value
+	if not tile_owned_by_current_player(coord):
+		delta-= rentCost #we will be paying this rent value
+		if current_board[coord][4]!="": #owned by other guy
+			delta-= pow(2, current_board[coord][5]-1) #subtract boost
+			
+	marker_instance.get_node("Label").text = ("+" if delta>=0 else "") + str(delta)
 	$ViableLocations.add_child(marker_instance)
 
 
-func show_possible_moves():
+func show_possible_moves(cell):
 	for coord in public_viable_locations:
-		spawn_move_marker(coord)
+		spawn_move_marker(coord,cell)
 
 
 func clear_move_markers():
@@ -370,6 +381,8 @@ func king_me(tile):
 		king_instance.set_position(world_pos)
 		white_team_ref.add_child(king_instance)
 		current_board[tile][1] = king_instance
+	
+	update_piece_income(tile)
 
 func invalidClick(cell):
 	return (
@@ -389,7 +402,7 @@ func _on_Cursor_accept_pressed(cell):
 	if(not selecting_destination and not multijump_mode):
 		selecting_destination = true
 		position_move_data(cell)
-		show_possible_moves()
+		show_possible_moves(cell)
 		return
 	#time to actually move
 	elif(selecting_destination or multijump_mode):
@@ -413,27 +426,29 @@ func _on_Cursor_accept_pressed(cell):
 					clear_move_markers()
 					multijump_mode = true
 					$EndTurn.disabled = false
-					show_possible_moves()
+					show_possible_moves(cell)
 					print(public_viable_locations)
 		elif not multijump_mode:
 			clear_move_markers()
 	selecting_destination = false
-	
+
 func _on_EndTurn_pressed():
 	end_turn()
 	selecting_destination = false
 	$EndTurn.disabled = true
 	multijump_mode = false
-	
+
 
 func _on_Cursor_accept_pressed_buymode(cell):
 	if not buy_mode or tile_not_for_purchase(cell):
 		return
 	trading_cell = cell
 	if current_board[cell][4]=="":
-		pass #TODO: purchase prompt with cost purchaseCost and locked cost field
+		$PurchasePopup/ValueLabel.text = str(purchaseCost) + " $"
+		$PurchasePopup.visible = true
 	else:
-		pass #TODO: purchase prompt with editable cost field
+		$TradePopup/SpinBox.value = purchaseCost
+		$TradePopup.visible = true
 		
 func tile_not_for_purchase(cell):
 	return tile_is_white(cell) or tile_owned_by_current_player(cell)
@@ -448,32 +463,156 @@ func _on_click_buymode():
 	if multijump_mode:
 		return
 	buy_mode = true
+	$InvestButton.disabled = true
+	$MoveButton.disabled = false
 	selecting_destination = false
 	clear_move_markers()
+	for child in black_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for child in white_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for tile in current_board.values():
+		if tile[6] != null:
+			print(tile)
+			tile[6].get_node("Border").visible = false
+			tile[6].get_node("Level"+str(tile[5])).visible = true
 
 func _on_click_movemode():
 	buy_mode = false
+	$MoveButton.disabled = true
+	$InvestButton.disabled = false
+	for child in black_team_ref.get_children():
+		child.get_node("InvestView").visible = false
+		child.get_node("MoveView").visible = true
+	for child in white_team_ref.get_children():
+		child.get_node("InvestView").visible = false
+		child.get_node("MoveView").visible = true
+	for tile in current_board.values():
+		if tile[6] != null:
+			print(tile)
+			tile[6].get_node("Border").visible = true
+			tile[6].get_node("Level0").visible = false
+			tile[6].get_node("Level1").visible = false
+			tile[6].get_node("Level2").visible = false
+			tile[6].get_node("Level3").visible = false
+			tile[6].get_node("Level4").visible = false
 	
 func _on_purchase_cancel():
 	trading_cell = null
+	$PurchasePopup.visible = false
+	$TradePopup.visible = false
+
 func _on_purchase_complete():
+	if turn_index%2:
+		if purchaseCost > wMoney:
+			$ErrorPopup.visible = true
+		else:
+			wMoney -= purchaseCost
+			add_building()
+			_on_click_movemode()
+	else:
+		if purchaseCost > bMoney:
+			$ErrorPopup.visible = true
+		else:
+			bMoney -= purchaseCost
+			add_building()
+			_on_click_movemode()
+	$PurchasePopup.visible = false
+
+func _on_trade_complete():
+	if turn_index%2:
+		if $TradePopup/SpinBox.value > wMoney:
+			$ErrorPopup.visible = true
+		else:
+			wMoney -= $TradePopup/SpinBox.value
+			bMoney += $TradePopup/SpinBox.value
+			building_team_ref.remove_child(current_board[trading_cell][6])
+			add_building()
+			_on_click_movemode()
+	else:
+		if $TradePopup/SpinBox.value > bMoney:
+			$ErrorPopup.visible = true
+		else:
+			bMoney -= $TradePopup/SpinBox.value
+			wMoney += $TradePopup/SpinBox.value
+			building_team_ref.remove_child(current_board[trading_cell][6])
+			add_building()
+			_on_click_movemode()
+	$TradePopup.visible = false
+
+func add_building():
 	var directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
 	var neighbour
 	var rank = 0
 	handle_leave_income_decrement(trading_cell)
 	for x in directions_to_check: 
-		neighbour = current_board[trading_cell+x]
+		var neighbourcell = trading_cell+x
+		if neighbourcell.x < 0 or neighbourcell.y < 0 or neighbourcell.x > 7 or neighbourcell.y > 7:
+			continue
+		neighbour = current_board[neighbourcell]
 		if neighbour[4]!="":
 			rank+=1
-			if neighbour[1]!=null:
-				handle_leave_income_decrement(neighbour)
-				neighbour[5]+=1
-				handle_arrival_income_increment(neighbour)
-			else:
-				neighbour[5]+=1
+			if current_board[trading_cell][6] == null:
+				if neighbour[1]!=null:
+					handle_leave_income_decrement(neighbourcell)
+					neighbour[5]+=1
+					handle_arrival_income_increment(neighbourcell)
+				else:
+					neighbour[5]+=1
+				neighbour[6].get_children()[neighbour[5]].visible = false
+				neighbour[6].get_children()[neighbour[5]+1].visible = true
 	current_board[trading_cell][5]=rank
 	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
 	handle_arrival_income_increment(trading_cell)
+	
+	var building
+	if current_board[trading_cell][4] == "white":
+		building = white_building.instance()
+	else:
+		building = black_building.instance()
+	var coord: Vector2 = $Board.map_to_world(trading_cell)
+	building.position.x = coord.x + 144
+	building.position.y = coord.y + 64
+	building_team_ref.add_child(building)
+	building.get_children()[current_board[trading_cell][5]+1].visible = true
+	current_board[trading_cell][6] = building
+	
 	trading_cell = null
 	end_turn()
-	
+
+func update_labels():
+	var income_period = int(INCOME_RISE_PERIOD/2)
+	var rent_period = int(RENT_RISE_PERIOD/2)
+	var true_round = int(turn_index/2)
+	$TurnContainer/Label.text = "Turn " + str(true_round+1)
+	$EventsContainer/IncomeValue.text = str(income_period - true_round%income_period) + " turns"
+	$EventsContainer/RentValue.text = str(rent_period - true_round%rent_period) + " turns"
+	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	for tile in current_board.keys():
+		if current_board[tile][0]:
+			var value = pawnIncome-get_tile_rent(tile)
+			var string = ("+" if value>=0 else "") + str(value)
+			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+
+func update_piece_income(tile):
+	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	if current_board[tile][0]:
+		var value = pawnIncome-get_tile_rent(tile)
+		var string = ("+" if value>=0 else "") + str(value)
+		current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+
+
+func _errorpopup_click():
+	$ErrorPopup.visible = false
+
+
+func _helppopup_click():
+	$HelpPopup.visible = false
+
+
+func _on_HelpButton_pressed():
+	$HelpPopup.visible = true
