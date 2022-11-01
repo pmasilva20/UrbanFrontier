@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/box2.png-5eb1c16313bebff2a83349bd8244ee58.stex"
+path="res://.import/blueTint.png-f0c85fdd38eb74a916b0de976b6edf25.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/box2.png"
-dest_files=[ "res://.import/box2.png-5eb1c16313bebff2a83349bd8244ee58.stex" ]
+source_file="res://Checkers/assets/blueTint.png"
+dest_files=[ "res://.import/blueTint.png-f0c85fdd38eb74a916b0de976b6edf25.stex" ]
 
 [params]
 

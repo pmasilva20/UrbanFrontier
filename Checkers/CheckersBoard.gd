@@ -61,7 +61,6 @@ func _ready():
 	empty_board()
 	update_board()
 	update_labels()
-	
 
 func empty_board():
 	for y in 8:
@@ -596,6 +595,12 @@ func update_labels():
 			var value = pawnIncome-get_tile_rent(tile)
 			var string = ("+" if value>=0 else "") + str(value)
 			current_board[tile][1].get_node("MoveView").get_node("Counter").get_node("Label").text = string
+	if turn_index%2:
+		$TurnContainer/Blue.visible = false
+		$TurnContainer/Orange.visible = true
+	else:
+		$TurnContainer/Orange.visible = false
+		$TurnContainer/Blue.visible = true
 
 func update_piece_income(tile):
 	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
