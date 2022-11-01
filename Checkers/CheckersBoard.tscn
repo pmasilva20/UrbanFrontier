@@ -133,7 +133,7 @@ texture_pressed = ExtResource( 21 )
 texture_disabled = ExtResource( 21 )
 expand = true
 
-[node name="TextureButton" type="TextureButton" parent="."]
+[node name="HelpButton" type="TextureButton" parent="."]
 margin_left = 34.0
 margin_top = 450.0
 margin_right = 94.0
@@ -377,14 +377,51 @@ text = "Not enough money!"
 align = 1
 valign = 1
 
+[node name="HelpPopup" type="TextureButton" parent="."]
+margin_right = 672.0
+margin_bottom = 640.0
+texture_normal = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="HelpPopup"]
+margin_left = 48.0
+margin_top = 128.0
+margin_right = 624.0
+margin_bottom = 513.0
+mouse_filter = 2
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="HelpPopup"]
+margin_left = 56.0
+margin_top = 128.0
+margin_right = 616.0
+margin_bottom = 512.0
+custom_fonts/font = ExtResource( 16 )
+text = "O jogo é baseado em Damas.
+Retrocesso de peão é permitido.
+Ataque não é obrigatório.
+Peças recebem rendimento e pagam renda por permanecer em quadrados por turno.
+Jogadores começam com 50$.
+Peão: 5$ + aumento de 1$/4 turnos rendimento
+Quadrado: 1$ + aumento de 1$ /3 turnos renda, 10$ + aumento de 2$/3 turnos compra ou ajuste direto entre jogadores.
+O valor de renda de quadrados adjacentes que sejam propriedade de jogadores aumenta.
+Isto inclui peças do adversário.  
+
+Primeiro jogador sem peças ou dinheiro perde."
+valign = 1
+autowrap = true
+
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]
 [connection signal="pressed" from="EndTurn" to="." method="_on_EndTurn_pressed"]
 [connection signal="pressed" from="MoveButton" to="." method="_on_click_movemode"]
 [connection signal="pressed" from="InvestButton" to="." method="_on_click_buymode"]
+[connection signal="pressed" from="HelpButton" to="." method="_on_HelpButton_pressed"]
 [connection signal="pressed" from="PurchasePopup/ConfirmButton" to="." method="_on_purchase_complete"]
 [connection signal="pressed" from="PurchasePopup/CancelButton" to="." method="_on_purchase_cancel"]
 [connection signal="pressed" from="TradePopup/ConfirmButton" to="." method="_on_trade_complete"]
 [connection signal="pressed" from="TradePopup/CancelButton" to="." method="_on_purchase_cancel"]
 [connection signal="pressed" from="ErrorPopup" to="." method="_errorpopup_click"]
+[connection signal="pressed" from="HelpPopup" to="." method="_helppopup_click"]

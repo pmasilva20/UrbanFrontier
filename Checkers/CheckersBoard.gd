@@ -606,3 +606,11 @@ func update_labels():
 
 func _errorpopup_click():
 	$ErrorPopup.visible = false
+
+
+func _helppopup_click():
+	$HelpPopup.visible = false
+
+
+func _on_HelpButton_pressed():
+	$HelpPopup.visible = true
