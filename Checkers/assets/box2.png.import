@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/New Game.png-7aab8018a08ed28288a8eca048f0c432.stex"
+path="res://.import/box2.png-5eb1c16313bebff2a83349bd8244ee58.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/New Game.png"
-dest_files=[ "res://.import/New Game.png-7aab8018a08ed28288a8eca048f0c432.stex" ]
+source_file="res://Checkers/assets/box2.png"
+dest_files=[ "res://.import/box2.png-5eb1c16313bebff2a83349bd8244ee58.stex" ]
 
 [params]
 

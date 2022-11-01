@@ -25,11 +25,13 @@ var pawnIncome = BASE_PAWN_INCOME
 var purchaseCost = BASE_PURCHASE_PRICE
 var rentCost = BASE_RENT
 
+var moveView = true
+
 #0 is unpopulated 
 #odd is white, 3 is king
 #even is black, 4 is king
 var current_board: Dictionary = {}
-#in format tile: [is occupied, refrence, color, is king, owner,level]
+#in format tile: [is occupied, refrence, color, is king, owner,level, buildingRef]
 onready var w_pieces_remaining: int = $W.get_child_count()
 onready var b_pieces_remaining: int = $B.get_child_count()
 
@@ -52,7 +54,9 @@ onready var white_team_ref =$W
 onready var black_team_ref =$B
 onready var black_king = preload("res://Checkers/BKing.tscn")
 onready var white_king = preload("res://Checkers/WKing.tscn")
-
+onready var white_building = preload("res://Checkers/WBuilding.tscn")
+onready var black_building = preload("res://Checkers/BBuilding.tscn")
+onready var building_team_ref = $BuildingTeam
 
 
 func _ready():
@@ -61,12 +65,12 @@ func _ready():
 	
 	# How to edit checker counter
 	var checker = white_team_ref.get_node("WChecker")
-	checker.get_node("Counter").get_node("Label").text = "+2"
+	checker.get_node("MoveView").get_node("Counter").get_node("Label").text = "+2"
 
 func empty_board():
 	for y in 8:
 		for x in 8:
-			current_board[Vector2(x, y)] = [false, null, "", false,"",0]
+			current_board[Vector2(x, y)] = [false, null, "", false,"",0,null]
 #in format is occupied, refrence, color, is king,owner,level
 
 #only seems to be called from the start game methods
@@ -79,7 +83,7 @@ func update_board_group(group,faction):
 	for x in group:
 		var position = x.get_position()
 		var coord: Vector2 = $Board.world_to_map(position)	
-		current_board[coord] = [true, x, faction, x.is_in_group("King")]
+		current_board[coord] = [true, x, faction, x.is_in_group("King"), current_board[coord][4], current_board[coord][5], current_board[coord][6]]
 	
 #returns true if makes king	
 func move_piece(initial_coord: Vector2, destination: Vector2):
@@ -414,10 +418,58 @@ func _on_Cursor_accept_pressed(cell):
 		elif not multijump_mode:
 			clear_move_markers()
 	selecting_destination = false
+
+
+func investCursorPressed(cell):
+	if current_board[cell][4] != "":
+		return
 	
-func _on_EndTurn_pressed():
-	end_turn()
-	selecting_destination = false
-	$EndTurn.disabled = true
-	multijump_mode = false
+	var building
+	if current_board[cell][2] == "white":
+		building = white_building.instance()
+	else:
+		building = black_building.instance()
 	
+	var coord: Vector2 = $Board.map_to_world(cell)
+	building.position.x = coord.x + 144
+	building.position.y = coord.y + 64
+	
+	building_team_ref.add_child(building) 
+	current_board[cell][6] = building
+	
+	#TODO: update level of current building and others
+	current_board[cell][5] = 1
+	building.get_node("Level1").visible = true
+	
+	#TODO: end turn
+
+
+func _on_MoveButton_pressed():
+	moveView = true
+	for child in black_team_ref.get_children():
+		child.get_node("InvestView").visible = false
+		child.get_node("MoveView").visible = true
+	for child in white_team_ref.get_children():
+		child.get_node("InvestView").visible = false
+		child.get_node("MoveView").visible = true
+	for tile in current_board.values():
+		if tile[6] != null:
+			tile[6].get_node("Border").visible = true
+			tile[6].get_node("Level1").visible = false
+			tile[6].get_node("Level2").visible = false
+			tile[6].get_node("Level3").visible = false
+			tile[6].get_node("Level4").visible = false
+
+
+func _on_InvestButton_pressed():
+	moveView = false
+	for child in black_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for child in white_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for tile in current_board.values():
+		if tile[6] != null:
+			tile[6].get_node("Border").visible = false
+			tile[6].get_node("Level"+str(tile[5])).visible = true

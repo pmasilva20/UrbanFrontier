@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/New Game Pressed.png-48d8301ddafad03d4f0c2a58843f76c6.stex"
+path="res://.import/buttonHelp.png-9f67ae86d83a7f4b6b3f2af19a316173.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/New Game Pressed.png"
-dest_files=[ "res://.import/New Game Pressed.png-48d8301ddafad03d4f0c2a58843f76c6.stex" ]
+source_file="res://Checkers/assets/buttonHelp.png"
+dest_files=[ "res://.import/buttonHelp.png-9f67ae86d83a7f4b6b3f2af19a316173.stex" ]
 
 [params]
 

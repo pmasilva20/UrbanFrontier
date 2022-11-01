@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/End Turn.png-add83f5e255b73419f6920185ccd90bc.stex"
+path="res://.import/tileLevel1Black.png-00ca87cc020b13547b97e8a2dce830b7.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Checkers/assets/End Turn.png"
-dest_files=[ "res://.import/End Turn.png-add83f5e255b73419f6920185ccd90bc.stex" ]
+source_file="res://Checkers/assets/tileLevel1Black.png"
+dest_files=[ "res://.import/tileLevel1Black.png-00ca87cc020b13547b97e8a2dce830b7.stex" ]
 
 [params]
 
