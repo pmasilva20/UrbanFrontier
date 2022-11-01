@@ -33,7 +33,7 @@ config/windows_native_icon="res://Checkers/assets/icon.ico"
 
 [display]
 
-window/size/width=640
+window/size/width=672
 window/size/height=640
 window/size/resizable=false
 
