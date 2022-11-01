@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://Checkers/assets/black tile.jpg" type="Texture" id=1]
 [ext_resource path="res://Checkers/assets/white tile.jpg" type="Texture" id=2]
@@ -24,6 +24,9 @@
 [ext_resource path="res://Checkers/assets/investButtonActive.png" type="Texture" id=22]
 [ext_resource path="res://Checkers/assets/newGameActive.png" type="Texture" id=23]
 [ext_resource path="res://Checkers/assets/newGameDisabled.png" type="Texture" id=24]
+[ext_resource path="res://Checkers/assets/obscura.png" type="Texture" id=25]
+[ext_resource path="res://Checkers/assets/black border.png" type="Texture" id=26]
+[ext_resource path="res://icon.png" type="Texture" id=27]
 
 [sub_resource type="TileSet" id=3]
 0/name = "black tile.jpg 0"
@@ -71,10 +74,10 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="BuildingTeam" parent="." instance=ExtResource( 17 )]
-
 [node name="Cursor" parent="." instance=ExtResource( 6 )]
 position = Vector2( 144, 64 )
+
+[node name="BuildingTeam" parent="." instance=ExtResource( 17 )]
 
 [node name="W" parent="." instance=ExtResource( 4 )]
 
@@ -210,8 +213,176 @@ custom_fonts/font = ExtResource( 14 )
 text = "4 turns"
 align = 1
 
+[node name="WhiteMoney" type="Label" parent="."]
+margin_left = 343.0
+margin_top = 16.0
+margin_right = 464.0
+margin_bottom = 48.0
+custom_fonts/font = ExtResource( 14 )
+text = "50 + xx/turn"
+valign = 1
+
+[node name="BlackMoney" type="Label" parent="."]
+margin_left = 344.0
+margin_top = 592.0
+margin_right = 464.0
+margin_bottom = 624.0
+custom_fonts/font = ExtResource( 14 )
+text = "50 + xx/turn"
+valign = 1
+
+[node name="WhiteMoneySymbol" type="TextureRect" parent="."]
+margin_left = 304.0
+margin_top = 16.0
+margin_right = 336.0
+margin_bottom = 48.0
+rect_pivot_offset = Vector2( -939, 560 )
+texture = ExtResource( 27 )
+expand = true
+
+[node name="BlackMoneySymbol" type="TextureRect" parent="."]
+margin_left = 304.0
+margin_top = 592.0
+margin_right = 336.0
+margin_bottom = 624.0
+rect_pivot_offset = Vector2( -939, 560 )
+texture = ExtResource( 27 )
+expand = true
+
+[node name="PurchasePopup" type="TextureRect" parent="."]
+visible = false
+margin_right = 672.0
+margin_bottom = 640.0
+texture = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="PurchasePopup"]
+margin_left = 144.0
+margin_top = 224.0
+margin_right = 528.0
+margin_bottom = 416.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="PurchasePopup"]
+margin_left = 208.0
+margin_top = 256.0
+margin_right = 464.0
+margin_bottom = 288.0
+custom_fonts/font = ExtResource( 14 )
+text = "Do you want to buy this tile for:"
+align = 1
+valign = 1
+
+[node name="ValueLabel" type="Label" parent="PurchasePopup"]
+margin_left = 208.0
+margin_top = 296.0
+margin_right = 464.0
+margin_bottom = 328.0
+custom_fonts/font = ExtResource( 15 )
+text = "XX $"
+align = 1
+valign = 1
+
+[node name="ConfirmButton" type="TextureButton" parent="PurchasePopup"]
+margin_left = 354.0
+margin_top = 350.0
+margin_right = 464.0
+margin_bottom = 384.0
+texture_normal = ExtResource( 26 )
+expand = true
+
+[node name="CancelButton" type="TextureButton" parent="PurchasePopup"]
+margin_left = 208.0
+margin_top = 350.0
+margin_right = 319.0
+margin_bottom = 384.0
+texture_normal = ExtResource( 26 )
+expand = true
+
+[node name="TradePopup" type="TextureRect" parent="."]
+visible = false
+margin_right = 672.0
+margin_bottom = 640.0
+texture = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="TradePopup"]
+margin_left = 144.0
+margin_top = 192.0
+margin_right = 528.0
+margin_bottom = 448.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="TradePopup"]
+margin_left = 208.0
+margin_top = 224.0
+margin_right = 464.0
+margin_bottom = 288.0
+custom_fonts/font = ExtResource( 14 )
+text = "Do you want to buy this tile from the opponent? Agree on a value:"
+align = 1
+valign = 1
+autowrap = true
+
+[node name="SpinBox" type="SpinBox" parent="TradePopup"]
+margin_left = 208.0
+margin_top = 312.0
+margin_right = 464.0
+margin_bottom = 344.0
+max_value = 1e+18
+step = 10.0
+
+[node name="ConfirmButton" type="TextureButton" parent="TradePopup"]
+margin_left = 354.0
+margin_top = 382.0
+margin_right = 464.0
+margin_bottom = 416.0
+texture_normal = ExtResource( 26 )
+expand = true
+
+[node name="CancelButton" type="TextureButton" parent="TradePopup"]
+margin_left = 208.0
+margin_top = 382.0
+margin_right = 319.0
+margin_bottom = 416.0
+texture_normal = ExtResource( 26 )
+expand = true
+
+[node name="ErrorPopup" type="TextureButton" parent="."]
+margin_right = 672.0
+margin_bottom = 640.0
+texture_normal = ExtResource( 25 )
+expand = true
+
+[node name="Background" type="TextureRect" parent="ErrorPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 353.0
+mouse_filter = 2
+texture = ExtResource( 7 )
+expand = true
+
+[node name="Label" type="Label" parent="ErrorPopup"]
+margin_left = 208.0
+margin_top = 288.0
+margin_right = 464.0
+margin_bottom = 352.0
+custom_fonts/font = ExtResource( 14 )
+text = "Not enough money!"
+align = 1
+valign = 1
+
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
+[connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]
 [connection signal="pressed" from="EndTurn" to="." method="_on_EndTurn_pressed"]
-[connection signal="pressed" from="MoveButton" to="." method="_on_MoveButton_pressed"]
-[connection signal="pressed" from="InvestButton" to="." method="_on_InvestButton_pressed"]
+[connection signal="pressed" from="MoveButton" to="." method="_on_click_movemode"]
+[connection signal="pressed" from="InvestButton" to="." method="_on_click_buymode"]
+[connection signal="pressed" from="PurchasePopup/ConfirmButton" to="." method="_on_purchase_complete"]
+[connection signal="pressed" from="PurchasePopup/CancelButton" to="." method="_on_purchase_cancel"]
+[connection signal="pressed" from="TradePopup/ConfirmButton" to="." method="_on_trade_complete"]
+[connection signal="pressed" from="TradePopup/CancelButton" to="." method="_on_purchase_cancel"]
+[connection signal="pressed" from="ErrorPopup" to="." method="_errorpopup_click"]

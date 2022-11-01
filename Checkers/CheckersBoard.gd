@@ -61,7 +61,7 @@ onready var building_team_ref = $BuildingTeam
 func _ready():
 	empty_board()
 	update_board()
-	
+	update_labels()
 	# How to edit checker counter
 	var checker = white_team_ref.get_node("WChecker")
 	checker.get_node("MoveView").get_node("Counter").get_node("Label").text = "+2"
@@ -182,7 +182,10 @@ func end_turn():
 		pass
 	elif bMoney==0:
 		pass
-	
+	update_labels()
+
+
+
 #called for peaceful movement only
 func empty_tile(tile):
 	current_board[tile][0] = false
@@ -243,6 +246,7 @@ func new_game():
 	
 	update_board()
 	turn_index = 0
+	update_labels()
 
 
 func position_move_data(check_position: Vector2):
@@ -434,9 +438,11 @@ func _on_Cursor_accept_pressed_buymode(cell):
 		return
 	trading_cell = cell
 	if current_board[cell][4]=="":
-		pass #TODO: purchase prompt with cost purchaseCost and locked cost field
+		$PurchasePopup/ValueLabel.text = str(purchaseCost) + " $"
+		$PurchasePopup.visible = true
 	else:
-		pass #TODO: purchase prompt with editable cost field
+		$TradePopup/SpinBox.value = purchaseCost
+		$TradePopup.visible = true
 		
 func tile_not_for_purchase(cell):
 	return tile_is_white(cell) or tile_owned_by_current_player(cell)
@@ -453,58 +459,19 @@ func _on_click_buymode():
 	buy_mode = true
 	selecting_destination = false
 	clear_move_markers()
+	for child in black_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for child in white_team_ref.get_children():
+		child.get_node("MoveView").visible = false
+		child.get_node("InvestView").visible = true
+	for tile in current_board.values():
+		if tile[6] != null:
+			print(tile)
+			tile[6].get_node("Border").visible = false
+			tile[6].get_node("Level"+str(tile[5])).visible = true
 
 func _on_click_movemode():
-	buy_mode = false
-	
-func _on_purchase_cancel():
-	trading_cell = null
-func _on_purchase_complete():
-	var directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
-	var neighbour
-	var rank = 0
-	handle_leave_income_decrement(trading_cell)
-	for x in directions_to_check: 
-		neighbour = current_board[trading_cell+x]
-		if neighbour[4]!="":
-			rank+=1
-			if neighbour[1]!=null:
-				handle_leave_income_decrement(neighbour)
-				neighbour[5]+=1
-				handle_arrival_income_increment(neighbour)
-			else:
-				neighbour[5]+=1
-	current_board[trading_cell][5]=rank
-	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
-	handle_arrival_income_increment(trading_cell)
-	trading_cell = null
-	end_turn()
-	
-func investCursorPressed(cell):
-	if current_board[cell][4] != "":
-		return
-	
-	var building
-	if turn_index%2:
-		building = white_building.instance()
-	else:
-		building = black_building.instance()
-	
-	var coord: Vector2 = $Board.map_to_world(cell)
-	building.position.x = coord.x + 144
-	building.position.y = coord.y + 64
-	
-	building_team_ref.add_child(building) 
-	current_board[cell][6] = building
-	
-	#TODO: update level of current building and others
-	current_board[cell][5] = 1
-	building.get_node("Level1").visible = true
-	
-	end_turn()
-
-
-func _on_MoveButton_pressed():
 	buy_mode = false
 	for child in black_team_ref.get_children():
 		child.get_node("InvestView").visible = false
@@ -514,22 +481,87 @@ func _on_MoveButton_pressed():
 		child.get_node("MoveView").visible = true
 	for tile in current_board.values():
 		if tile[6] != null:
+			print(tile)
 			tile[6].get_node("Border").visible = true
 			tile[6].get_node("Level1").visible = false
 			tile[6].get_node("Level2").visible = false
 			tile[6].get_node("Level3").visible = false
 			tile[6].get_node("Level4").visible = false
+			tile[6].get_node("Level5").visible = false
+	
+func _on_purchase_cancel():
+	trading_cell = null
+	$PurchasePopup.visible = false
+	$TradePopup.visible = false
 
+func _on_purchase_complete():
+	#TODO: sanitize so purchase cant be made if not enough money
+	if turn_index%2:
+		wMoney -= purchaseCost
+	else:
+		bMoney -= purchaseCost
+	add_building()
+	$PurchasePopup.visible = false
 
-func _on_InvestButton_pressed():
-	buy_mode = true
-	for child in black_team_ref.get_children():
-		child.get_node("MoveView").visible = false
-		child.get_node("InvestView").visible = true
-	for child in white_team_ref.get_children():
-		child.get_node("MoveView").visible = false
-		child.get_node("InvestView").visible = true
-	for tile in current_board.values():
-		if tile[6] != null:
-			tile[6].get_node("Border").visible = false
-			tile[6].get_node("Level"+str(tile[5])).visible = true
+func _on_trade_complete():
+	#TODO: sanitize so trade cant be made if not enough money
+	if turn_index%2:
+		wMoney -= $TradePopup/SpinBox.value
+		bMoney += $TradePopup/SpinBox.value
+	else:
+		bMoney -= $TradePopup/SpinBox.value
+		wMoney += $TradePopup/SpinBox.value
+	add_building()
+	$TradePopup.visible = false
+
+func add_building():
+	var directions_to_check = [Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]
+	var neighbour
+	var rank = 1
+	handle_leave_income_decrement(trading_cell)
+	for x in directions_to_check: 
+		var neighbourcell = trading_cell+x
+		if neighbourcell.x < 0 or neighbourcell.y < 0 or neighbourcell.x > 7 or neighbourcell.y > 7:
+			continue
+		neighbour = current_board[neighbourcell]
+		if neighbour[4]!="":
+			rank+=1
+			if neighbour[1]!=null:
+				handle_leave_income_decrement(neighbourcell)
+				neighbour[5]+=1
+				handle_arrival_income_increment(neighbourcell)
+			else:
+				neighbour[5]+=1
+			neighbour[6].get_children()[neighbour[5]-1].visible = false
+			neighbour[6].get_children()[neighbour[5]].visible = true
+	current_board[trading_cell][5]=rank
+	current_board[trading_cell][4]= ("black" if turn_index%2==0 else "white")
+	handle_arrival_income_increment(trading_cell)
+	
+	var building
+	if current_board[trading_cell][4] == "white":
+		building = white_building.instance()
+	else:
+		building = black_building.instance()
+	var coord: Vector2 = $Board.map_to_world(trading_cell)
+	building.position.x = coord.x + 144
+	building.position.y = coord.y + 64
+	building_team_ref.add_child(building)
+	building.get_children()[current_board[trading_cell][5]].visible = true
+	current_board[trading_cell][6] = building
+	
+	trading_cell = null
+	end_turn()
+
+func update_labels():
+	var income_period = int(INCOME_RISE_PERIOD/2)
+	var rent_period = int(RENT_RISE_PERIOD/2)
+	var true_round = int(turn_index/2)
+	$TurnContainer/Label.text = "Turn " + str(true_round+1)
+	$EventsContainer/IncomeValue.text = str(income_period - true_round%income_period) + " turns"
+	$EventsContainer/RentValue.text = str(rent_period - true_round%rent_period) + " turns"
+	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+
+func _errorpopup_click():
+	$ErrorPopup.visible = false
