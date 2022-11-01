@@ -1,10 +1,15 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Checkers/assets/white border.png" type="Texture" id=1]
+[ext_resource path="res://Checkers/assets/tileLevel4White.png" type="Texture" id=2]
+[ext_resource path="res://Checkers/assets/tileLevel3White.png" type="Texture" id=3]
+[ext_resource path="res://Checkers/assets/tileLevel2White.png" type="Texture" id=4]
+[ext_resource path="res://Checkers/assets/tileLevel1White.png" type="Texture" id=5]
 
 [node name="WBuilding" type="Node2D"]
 
 [node name="Border" type="TextureRect" parent="."]
+visible = false
 margin_right = 64.0
 margin_bottom = 64.0
 texture = ExtResource( 1 )
@@ -13,18 +18,22 @@ texture = ExtResource( 1 )
 visible = false
 margin_right = 64.0
 margin_bottom = 64.0
+texture = ExtResource( 5 )
 
 [node name="Level2" type="TextureRect" parent="."]
 visible = false
 margin_right = 64.0
 margin_bottom = 64.0
+texture = ExtResource( 4 )
 
 [node name="Level3" type="TextureRect" parent="."]
 visible = false
 margin_right = 64.0
 margin_bottom = 64.0
+texture = ExtResource( 3 )
 
 [node name="Level4" type="TextureRect" parent="."]
 visible = false
 margin_right = 64.0
 margin_bottom = 64.0
+texture = ExtResource( 2 )
