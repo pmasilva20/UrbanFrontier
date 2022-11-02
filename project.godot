@@ -35,7 +35,6 @@ config/windows_native_icon="res://Checkers/assets/icon.ico"
 
 window/size/width=672
 window/size/height=640
-window/size/resizable=false
 
 [editor_plugins]
 

@@ -273,8 +273,8 @@ expand = true
 
 [node name="PurchasePopup" type="TextureRect" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture = ExtResource( 25 )
 expand = true
 
@@ -326,8 +326,8 @@ expand = true
 
 [node name="TradePopup" type="TextureRect" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture = ExtResource( 25 )
 expand = true
 
@@ -378,8 +378,8 @@ expand = true
 
 [node name="ErrorPopup" type="TextureButton" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture_normal = ExtResource( 25 )
 expand = true
 
@@ -403,8 +403,8 @@ align = 1
 valign = 1
 
 [node name="HelpPopup" type="TextureButton" parent="."]
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture_normal = ExtResource( 25 )
 expand = true
 
@@ -448,8 +448,8 @@ valign = 1
 
 [node name="OrangeWinsPopup" type="TextureButton" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture_normal = ExtResource( 25 )
 expand = true
 
@@ -474,8 +474,8 @@ valign = 1
 
 [node name="BlueWinsPopup" type="TextureButton" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture_normal = ExtResource( 25 )
 expand = true
 
@@ -500,8 +500,8 @@ valign = 1
 
 [node name="TiePopup" type="TextureButton" parent="."]
 visible = false
-margin_right = 672.0
-margin_bottom = 640.0
+margin_right = 10000.0
+margin_bottom = 10000.0
 texture_normal = ExtResource( 25 )
 expand = true
 
