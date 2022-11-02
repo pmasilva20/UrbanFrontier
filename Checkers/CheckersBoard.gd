@@ -587,8 +587,8 @@ func update_labels():
 	$TurnContainer/Label.text = "Turn " + str(true_round+1)
 	$EventsContainer/IncomeValue.text = str(income_period - true_round%income_period) + " turns"
 	$EventsContainer/RentValue.text = str(rent_period - true_round%rent_period) + " turns"
-	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
-	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	$WhiteMoney.text = str(wMoney) + (" +" if wIncome>=0 else " ") + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + (" +" if bIncome>=0 else " ") + str(bIncome) + "/turn"
 	for tile in current_board.keys():
 		if current_board[tile][0]:
 			var value = pawnIncome-get_tile_rent(tile)

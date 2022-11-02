@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=2]
+[gd_scene load_steps=42 format=2]
 
 [ext_resource path="res://Checkers/assets/black tile.jpg" type="Texture" id=1]
 [ext_resource path="res://Checkers/assets/white tile.jpg" type="Texture" id=2]
@@ -39,6 +39,7 @@
 [ext_resource path="res://Checkers/assets/popupGrey.png" type="Texture" id=37]
 [ext_resource path="res://Checkers/assets/popupBlue.png" type="Texture" id=38]
 [ext_resource path="res://Checkers/assets/popupOrange.png" type="Texture" id=39]
+[ext_resource path="res://fonts/TitleFont.tres" type="DynamicFont" id=40]
 
 [sub_resource type="TileSet" id=3]
 0/name = "black tile.jpg 0"
@@ -409,32 +410,41 @@ expand = true
 
 [node name="Background" type="TextureRect" parent="HelpPopup"]
 margin_left = 48.0
-margin_top = 128.0
+margin_top = 160.0
 margin_right = 624.0
-margin_bottom = 513.0
+margin_bottom = 545.0
 mouse_filter = 2
 texture = ExtResource( 36 )
 expand = true
 
 [node name="Label" type="Label" parent="HelpPopup"]
 margin_left = 56.0
-margin_top = 128.0
+margin_top = 160.0
 margin_right = 616.0
-margin_bottom = 512.0
+margin_bottom = 544.0
 custom_fonts/font = ExtResource( 16 )
-text = "O jogo é baseado em Damas.
-Retrocesso de peão é permitido.
-Ataque não é obrigatório.
-Peças recebem rendimento e pagam renda por permanecer em quadrados por turno.
-Jogadores começam com 50$.
-Peão: 5$ + aumento de 1$/4 turnos rendimento
-Quadrado: 1$ + aumento de 1$ /3 turnos renda, 10$ + aumento de 2$/3 turnos compra ou ajuste direto entre jogadores.
-O valor de renda de quadrados adjacentes que sejam propriedade de jogadores aumenta.
-Isto inclui peças do adversário.  
+text = "Urban Frontier is a game based on Checkers.
+It changes the Checkers ruleset by allowing any piece to move backwards and removing mandatory attacks.
+In addition the the Checkers-like gameplay there is a financial aspect.
+Both players start with a given savings value.
+At the end of every turn pawns will provide income to their owner, but they must also pay rent for the tile they stand on.
+Players may purchase or transfer tiles so that the rent associated with that tile will be paid out to them.
+Purchasing a tile will cause it and adjacent owned tiles to become more expensive.
+Income, rent, and property prices will rise every few turns.
 
-Primeiro jogador sem peças ou dinheiro perde."
+The first player to run out of pawns or savings loses."
 valign = 1
 autowrap = true
+
+[node name="Title" type="Label" parent="HelpPopup"]
+margin_left = 48.0
+margin_top = 96.0
+margin_right = 624.0
+margin_bottom = 160.0
+custom_fonts/font = ExtResource( 40 )
+text = "Urban Frontier"
+align = 1
+valign = 1
 
 [node name="OrangeWinsPopup" type="TextureButton" parent="."]
 visible = false
@@ -514,8 +524,8 @@ text = "TIE!"
 align = 1
 valign = 1
 
-[connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
+[connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]
 [connection signal="pressed" from="EndTurn" to="." method="_on_EndTurn_pressed"]
 [connection signal="pressed" from="MoveButton" to="." method="_on_click_movemode"]
