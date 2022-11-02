@@ -25,6 +25,9 @@ var pawnIncome = BASE_PAWN_INCOME
 var purchaseCost = BASE_PURCHASE_PRICE
 var rentCost = BASE_RENT
 
+var bPieces = 12
+var wPieces = 12
+
 #0 is unpopulated 
 #odd is white, 3 is king
 #even is black, 4 is king
@@ -154,23 +157,23 @@ func get_tile_rent(tile):
 func end_turn():
 	clear_move_markers()
 	turn_index += 1
-	
+	yield(get_tree(), "idle_frame") # wait a frame so child count will update
 	if turn_index%TRANSFER_PERIOD==0: #rent charging
 		bMoney+=bIncome
 		wMoney+=wIncome
 	if turn_index%RENT_RISE_PERIOD==0: #rent rising
 		rentCost += RENT_INCREMENT
 		purchaseCost+= PURCHASE_PRICE_INCREMENT
-		bIncome-= black_team_ref.get_child_count() * RENT_INCREMENT
-		wIncome-= white_team_ref.get_child_count() * RENT_INCREMENT
+		bIncome-= bPieces * RENT_INCREMENT
+		wIncome-= wPieces * RENT_INCREMENT
 	if turn_index%INCOME_RISE_PERIOD==0: #income improvement
 		pawnIncome+= INCOME_INCREMENT
-		bIncome+= black_team_ref.get_child_count() * INCOME_INCREMENT
-		wIncome+= white_team_ref.get_child_count() * INCOME_INCREMENT
-	yield(get_tree(), "idle_frame") # wait a frame
-	if black_team_ref.get_child_count()==0:
+		bIncome+= bPieces * INCOME_INCREMENT
+		wIncome+= wPieces * INCOME_INCREMENT
+
+	if bPieces==0:
 		$OrangeWinsPopup.visible = true
-	elif white_team_ref.get_child_count()==0:
+	elif wPieces==0:
 		$BlueWinsPopup.visible = true
 	elif wMoney<=0 and bMoney<=0:
 		$TiePopup.visible = true
@@ -224,7 +227,8 @@ func new_game():
 	wMoney = START_MONEY
 	bIncome = START_INCOME
 	wIncome = START_INCOME
-	
+	bPieces = 12
+	wPieces = 12
 	pawnIncome = BASE_PAWN_INCOME
 	purchaseCost = BASE_PURCHASE_PRICE
 	rentCost = BASE_RENT
@@ -330,6 +334,10 @@ func clear_move_markers():
 
 
 func kill_checker(tile):
+	if turn_index%2==0: #black turn
+		wPieces-=1
+	else:
+		bPieces-=1
 	handle_leave_income_decrement(tile)
 	current_board[tile][1].queue_free()
 	empty_tile(tile)
@@ -602,8 +610,8 @@ func update_labels():
 		$TurnContainer/Blue.visible = true
 
 func update_piece_income(tile):
-	$WhiteMoney.text = str(wMoney) + " + " + str(wIncome) + "/turn"
-	$BlackMoney.text = str(bMoney) + " + " + str(bIncome) + "/turn"
+	$WhiteMoney.text = str(wMoney) + (" +" if wIncome>=0 else " ") + str(wIncome) + "/turn"
+	$BlackMoney.text = str(bMoney) + (" +" if bIncome>=0 else " ") + str(bIncome) + "/turn"
 	if current_board[tile][0]:
 		var value = pawnIncome-get_tile_rent(tile)
 		var string = ("+" if value>=0 else "") + str(value)
