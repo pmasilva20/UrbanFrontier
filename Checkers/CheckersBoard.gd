@@ -45,6 +45,7 @@ var turn_index: int = 0
 
 onready var white_team = preload("res://Checkers/WhiteTeam.tscn")
 onready var black_team = preload("res://Checkers/BlackTeam.tscn")
+onready var building_class = preload("res://Checkers/BuildingTeam.tscn")
 onready var move_marker = preload("res://Checkers/PossibleMoveMarker.tscn")
 onready var white_team_ref =$W
 onready var black_team_ref =$B
@@ -231,6 +232,10 @@ func new_game():
 	var w_instance = white_team.instance()
 	white_team_ref = w_instance
 	add_child(w_instance)
+	
+	var build_instance = building_class.instance()
+	building_team_ref = build_instance
+	add_child(build_instance)
 	
 	var b_instance = black_team.instance()
 	black_team_ref = b_instance
