@@ -1,14 +1,14 @@
 extends Node2D
 
 const START_MONEY = 50
-const START_INCOME = 48
+const START_INCOME = 36
 
 const TRANSFER_PERIOD = 2
 const RENT_RISE_PERIOD = 6
-const INCOME_RISE_PERIOD = 8
+const INCOME_RISE_PERIOD = 10
 
 const BASE_PAWN_INCOME = 5
-const BASE_RENT = 1
+const BASE_RENT = 2
 const BASE_PURCHASE_PRICE = 10
 
 const RENT_INCREMENT = 1
@@ -172,11 +172,11 @@ func end_turn():
 		$OrangeWinsPopup.visible = true
 	elif white_team_ref.get_child_count()==0:
 		$BlueWinsPopup.visible = true
-	elif wMoney==0 and bMoney==0:
+	elif wMoney<=0 and bMoney<=0:
 		$TiePopup.visible = true
-	elif wMoney==0:
+	elif wMoney<=0:
 		$BlueWinsPopup.visible = true
-	elif bMoney==0:
+	elif bMoney<=0:
 		$OrangeWinsPopup.visible = true
 	update_labels()
 
