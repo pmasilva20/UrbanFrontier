@@ -4,6 +4,7 @@
 
 [node name="W" type="Node2D"]
 position = Vector2( 144, 64 )
+z_index = -1
 
 [node name="WChecker" parent="." instance=ExtResource( 1 )]
 position = Vector2( 32, 32 )
