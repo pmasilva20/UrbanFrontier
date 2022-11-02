@@ -96,12 +96,12 @@ func move_piece(initial_coord: Vector2, destination: Vector2):
 		empty_tile(initial_coord)
 		handle_arrival_income_increment(destination)
 		var team = current_board[destination][2]
-		if((team == "white") and (destination.y == 7)):
+		if(not current_board[destination][3] and (team == "white") and (destination.y == 7)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
 			return true
-		if((team == "black") and (destination.y == 0)):
+		if(not current_board[destination][3] and (team == "black") and (destination.y == 0)):
 			current_board[destination][3] = true
 			yield($Tween, "tween_completed")
 			king_me(destination)
