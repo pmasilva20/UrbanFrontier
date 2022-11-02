@@ -242,6 +242,7 @@ func new_game():
 	update_board()
 	turn_index = 0
 	update_labels()
+	_on_click_movemode()
 
 
 func position_move_data(check_position: Vector2):
