@@ -1,4 +1,10 @@
-# Godot-Checkers
-I am making this as the part of a collection of board games made in the Godot engine 
+# Urban Frontier
 
-you can test the project on Itch at: https://figroot.itch.io/godot-checkers
+Duas comunidades competem pelo domínio da cidade.\
+Atráves de violência ou barbaridades imobiliárias, a paisagem muda.\
+Talvez no fim não hajam vencedores...
+
+Trabalho Realizado no âmbito da cadeira de Jogos Sérios.
+
+### Website:
+- https://urbanfrontier.000webhostapp.com
