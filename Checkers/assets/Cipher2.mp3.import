@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/Cipher2.mp3-6bf378649a16f9671ec56875108e7ddf.mp3str"
+
+[deps]
+
+source_file="res://Checkers/assets/Cipher2.mp3"
+dest_files=[ "res://.import/Cipher2.mp3-6bf378649a16f9671ec56875108e7ddf.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0
