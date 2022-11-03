@@ -57,6 +57,8 @@ onready var white_king = preload("res://Checkers/WKing.tscn")
 onready var white_building = preload("res://Checkers/WBuilding.tscn")
 onready var black_building = preload("res://Checkers/BBuilding.tscn")
 onready var building_team_ref = $BuildingTeam
+onready var audio_active = preload("res://.import/audioButtonActive.png-fe1889e80fd6fd2e10b5725a347419f9.stex")
+onready var audio_disabled = preload("res://.import/audioButtonDisabled.png-b9621920a8c4c1b43e12feefe126bc47.stex")
 
 
 func _ready():
@@ -634,3 +636,12 @@ func _endpopup_click():
 	$OrangeWinsPopup.visible = false
 	$BlueWinsPopup.visible = false
 	$TiePopup.visible = false
+
+
+func _on_AudioButton_pressed():
+	if $AudioStreamPlayer.playing == false:
+		$AudioStreamPlayer.play()
+		$AudioButton.texture_normal = audio_active
+	else:
+		$AudioStreamPlayer.stop()
+		$AudioButton.texture_normal = audio_disabled
