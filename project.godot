@@ -29,7 +29,7 @@ _global_script_class_icons={
 config/name="Urban Frontier"
 run/main_scene="res://Checkers/CheckersBoard.tscn"
 config/icon="res://Checkers/assets/GameIcon.png"
-config/windows_native_icon="res://Checkers/assets/icon.ico"
+config/windows_native_icon="res://Checkers/assets/GameIcon.ico"
 
 [display]
 
