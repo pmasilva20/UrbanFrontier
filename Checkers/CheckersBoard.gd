@@ -321,7 +321,7 @@ func spawn_move_marker(coord,from_tile):
 		if current_board[coord][4]!="": #owned by other guy
 			delta-= pow(2, current_board[coord][5]-1) #subtract boost
 			
-	marker_instance.get_node("Label").text = ("+" if delta>=0 else "") + str(delta)
+	marker_instance.get_node("Label").text = ("+" if int(delta)>=0 else "") + str(int(delta))
 	$ViableLocations.add_child(marker_instance)
 
 
