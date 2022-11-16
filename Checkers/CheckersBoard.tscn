@@ -551,8 +551,8 @@ stream = ExtResource( 42 )
 volume_db = -2.364
 autoplay = true
 
-[connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed"]
+[connection signal="accept_pressed" from="Cursor" to="." method="_on_Cursor_accept_pressed_buymode"]
 [connection signal="pressed" from="NewGame" to="." method="new_game"]
 [connection signal="pressed" from="EndTurn" to="." method="_on_EndTurn_pressed"]
 [connection signal="pressed" from="MoveButton" to="." method="_on_click_movemode"]
