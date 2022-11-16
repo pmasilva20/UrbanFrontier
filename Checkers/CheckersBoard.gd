@@ -28,6 +28,9 @@ var rentCost = BASE_RENT
 var bPieces = 12
 var wPieces = 12
 
+var bOnOwned = 0
+var wOnOwned = 0
+
 #0 is unpopulated 
 #odd is white, 3 is king
 #even is black, 4 is king
@@ -122,8 +125,12 @@ func handle_leave_income_decrement(tile):
 	var pawnTeam = current_board[tile][2]
 	var squareRent = get_tile_rent(tile) #this is 0 if tile is owned by occupant
 	if pawnTeam=="white":
+		if squareRent==0: #leaving an owned tile
+			wOnOwned-=1
 		wIncome-= (pawnIncome-squareRent)
 	elif pawnTeam=="black":
+		if squareRent==0:
+			bOnOwned-=1
 		bIncome-= (pawnIncome-squareRent)
 	
 	if current_board[tile][4]!="": #player owned tile
@@ -136,8 +143,12 @@ func handle_arrival_income_increment(tile):
 	var pawnTeam = current_board[tile][2]
 	var squareRent = get_tile_rent(tile) #this is 0 if tile is owned by occupant
 	if pawnTeam=="white":
+		if squareRent==0: #leaving an owned tile
+			wOnOwned+=1
 		wIncome+= (pawnIncome-squareRent)
 	elif pawnTeam=="black":
+		if squareRent==0:
+			bOnOwned+=1
 		bIncome+= (pawnIncome-squareRent)
 	if current_board[tile][4]!="": #player owned tile
 		if pawnTeam=="white":
@@ -166,8 +177,8 @@ func end_turn():
 	if turn_index%RENT_RISE_PERIOD==0: #rent rising
 		rentCost += RENT_INCREMENT
 		purchaseCost+= PURCHASE_PRICE_INCREMENT
-		bIncome-= bPieces * RENT_INCREMENT
-		wIncome-= wPieces * RENT_INCREMENT
+		bIncome-= (bPieces-bOnOwned) * RENT_INCREMENT
+		wIncome-= (wPieces-wOnOwned) * RENT_INCREMENT
 	if turn_index%INCOME_RISE_PERIOD==0: #income improvement
 		pawnIncome+= INCOME_INCREMENT
 		bIncome+= bPieces * INCOME_INCREMENT
@@ -231,6 +242,8 @@ func new_game():
 	wIncome = START_INCOME
 	bPieces = 12
 	wPieces = 12
+	bOnOwned = 0
+	wOnOwned = 0
 	pawnIncome = BASE_PAWN_INCOME
 	purchaseCost = BASE_PURCHASE_PRICE
 	rentCost = BASE_RENT
@@ -318,7 +331,7 @@ func spawn_move_marker(coord,from_tile):
 	var delta = get_tile_rent(from_tile) #we will no longer be paying this rent value
 	if not tile_owned_by_current_player(coord):
 		delta-= rentCost #we will be paying this rent value
-		if current_board[coord][4]!="": #owned by other guy
+		if current_board[coord][4]!="" and current_board[coord][5]!=0: #owned by other guy
 			delta-= pow(2, current_board[coord][5]-1) #subtract boost
 			
 	marker_instance.get_node("Label").text = ("+" if int(delta)>=0 else "") + str(int(delta))
